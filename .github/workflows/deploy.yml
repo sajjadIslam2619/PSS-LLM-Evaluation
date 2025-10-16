@@ -1,0 +1,70 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Change this if your project directory is different
+      PROJECT_DIR: PSS-React-Frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ env.PROJECT_DIR }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: npm ci
+
+      - name: Determine base path
+        id: repo
+        run: |
+          REPO_NAME=${GITHUB_REPOSITORY#*/}
+          echo "name=$REPO_NAME" >> $GITHUB_OUTPUT
+
+      - name: Build
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          VITE_BASE_PATH: /${{ steps.repo.outputs.name }}/
+        run: |
+          node -e "const fs=require('fs');const p='vite.config.ts';let s=fs.readFileSync(p,'utf8');if(!/base:\s*/.test(s)){s=s.replace(/defineConfig\(\{/,m=>m+'\n\tbase: process.env.VITE_BASE_PATH || \'/\',');}fs.writeFileSync(p,s);"
+          npm run build
+          # SPA fallback
+          cp dist/index.html dist/404.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.PROJECT_DIR }}/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+
