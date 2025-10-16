@@ -18,7 +18,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Change this if your project directory is different
       PROJECT_DIR: PSS-React-Frontend
     steps:
       - name: Checkout
@@ -48,7 +47,6 @@ jobs:
         run: |
           node -e "const fs=require('fs');const p='vite.config.ts';let s=fs.readFileSync(p,'utf8');if(!/base:\s*/.test(s)){s=s.replace(/defineConfig\(\{/,m=>m+'\n\tbase: process.env.VITE_BASE_PATH || \'/\',');}fs.writeFileSync(p,s);"
           npm run build
-          # SPA fallback
           cp dist/index.html dist/404.html
 
       - name: Upload artifact
@@ -66,5 +64,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-
