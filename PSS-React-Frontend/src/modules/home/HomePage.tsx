@@ -8,9 +8,9 @@ export const HomePage: React.FC = () => {
 	const [post, setPost] = useState('')
 	const [comment, setComment] = useState('')
 	const [selectedLabels, setSelectedLabels] = useState<{name: string, percentage: number}[]>([])
-	const [empathy, setEmpathy] = useState(0)
-	const [relevant, setRelevant] = useState(0)
-	const [safe, setSafe] = useState(0)
+	const [empathy, setEmpathy] = useState<string>('')
+	const [relevant, setRelevant] = useState<string>('')
+	const [safe, setSafe] = useState<string>('')
 	const [isSatisfiedWithLabels, setIsSatisfiedWithLabels] = useState<boolean | null>(null)
 	const [customLabels, setCustomLabels] = useState<string[]>([])
 	const [isSubmitted, setIsSubmitted] = useState(false)
@@ -69,7 +69,7 @@ export const HomePage: React.FC = () => {
 			warnings.push('Please generate a comment')
 		}
 		
-		if (empathy === 0 && relevant === 0 && safe === 0) {
+		if (empathy === '' && relevant === '' && safe === '') {
 			warnings.push('Please evaluate the generated comment')
 		}
 		
@@ -86,62 +86,46 @@ export const HomePage: React.FC = () => {
 			setPost('')
 			setComment('')
 			setSelectedLabels([])
-			setEmpathy(0)
-			setRelevant(0)
-			setSafe(0)
+			setEmpathy('')
+			setRelevant('')
+			setSafe('')
 			setIsSatisfiedWithLabels(null)
 			setCustomLabels([])
 			setIsSubmitted(false)
 		}, 2000)
 	}
 
-	const EvaluationScale: React.FC<{ label: string; value: number; onChange: (value: number) => void }> = ({ label, value, onChange }) => (
-		<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-			<span style={{ minWidth: '80px', fontSize: '14px', color: 'var(--muted)' }}>{label}:</span>
-			<div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-				{[1, 2, 3, 4, 5].map((num) => (
-					<button
-						key={num}
-						type="button"
-						onClick={() => onChange(num)}
-						style={{
-							width: '32px',
-							height: '32px',
-							borderRadius: '50%',
-							border: '2px solid',
-							borderColor: value === num ? 'var(--primary)' : '#2a355f',
-							background: value === num ? 'var(--primary)' : 'transparent',
-							color: value === num ? 'white' : 'var(--text)',
-							cursor: 'pointer',
-							fontSize: '12px',
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'center'
-						}}
-					>
-						{num}
-					</button>
-				))}
-				<button
-					type="button"
-					onClick={() => onChange(0)}
-					style={{
-						padding: '6px 12px',
-						borderRadius: '16px',
-						border: '2px solid',
-						borderColor: value === 0 ? 'var(--primary)' : '#2a355f',
-						background: value === 0 ? 'var(--primary)' : 'transparent',
-						color: value === 0 ? 'white' : 'var(--text)',
-						cursor: 'pointer',
-						fontSize: '12px',
-						marginLeft: '8px'
-					}}
-				>
-					Not sure
-				</button>
+	const EvaluationScale: React.FC<{ label: string; value: string; onChange: (value: string) => void }> = ({ label, value, onChange }) => {
+		const options = ['Agree', 'Neutral', 'Disagree']
+		
+		return (
+			<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+				<span style={{ minWidth: '80px', fontSize: '14px', color: 'var(--muted)' }}>{label}:</span>
+				<div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+					{options.map((option) => (
+						<button
+							key={option}
+							type="button"
+							onClick={() => onChange(option)}
+							style={{
+								padding: '6px 8px',
+								borderRadius: '4px',
+								border: '2px solid',
+								borderColor: value === option ? 'var(--primary)' : '#2a355f',
+								background: value === option ? 'var(--primary)' : 'transparent',
+								color: value === option ? 'white' : 'var(--text)',
+								cursor: 'pointer',
+								fontSize: '11px',
+								whiteSpace: 'nowrap'
+							}}
+						>
+							{option}
+						</button>
+					))}
+				</div>
 			</div>
-		</div>
-	)
+		)
+	}
 
 	return (
 		<div className="container">
@@ -265,7 +249,7 @@ export const HomePage: React.FC = () => {
 				</label>
 
 				{comment && (
-					<div style={{ marginTop: 16, padding: 12, background: '#0f1730', borderRadius: '8px', border: '1px solid #2a355f' }}>
+					<div style={{ marginTop: 16 }}>
 						<h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: 'var(--text)' }}>Generated Comment Evaluation</h3>
 						<div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 							<EvaluationScale label="Empathy" value={empathy} onChange={setEmpathy} />
