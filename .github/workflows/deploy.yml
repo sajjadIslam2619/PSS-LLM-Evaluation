@@ -1,8 +1,11 @@
-name: Deploy to GitHub Pages
+name: Deploy Vite app (subfolder) to GitHub Pages
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
+    paths:
+      - "PSS-React-Frontend/**"
+      - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
 permissions:
@@ -17,42 +20,23 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      PROJECT_DIR: PSS-React-Frontend
+    defaults:
+      run:
+        working-directory: PSS-React-Frontend
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: ${{ env.PROJECT_DIR }}/package-lock.json
-
-      - name: Install dependencies
-        working-directory: ${{ env.PROJECT_DIR }}
-        run: npm ci
-
-      - name: Determine base path
-        id: repo
-        run: |
-          REPO_NAME=${GITHUB_REPOSITORY#*/}
-          echo "name=$REPO_NAME" >> $GITHUB_OUTPUT
-
-      - name: Build
-        working-directory: ${{ env.PROJECT_DIR }}
-        env:
-          VITE_BASE_PATH: /${{ steps.repo.outputs.name }}/
-        run: |
-          node -e "const fs=require('fs');const p='vite.config.ts';let s=fs.readFileSync(p,'utf8');if(!/base:\s*/.test(s)){s=s.replace(/defineConfig\(\{/,m=>m+'\n\tbase: process.env.VITE_BASE_PATH || \'/\',');}fs.writeFileSync(p,s);"
-          npm run build
-          cp dist/index.html dist/404.html
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+          cache-dependency-path: PSS-React-Frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      # SPA fallback + skip Jekyll processing (harmless safeguard)
+      - run: cp dist/index.html dist/404.html && touch dist/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ env.PROJECT_DIR }}/dist
+          path: PSS-React-Frontend/dist
 
   deploy:
     needs: build
@@ -61,6 +45,5 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
+      - id: deployment
         uses: actions/deploy-pages@v4
