@@ -17,8 +17,8 @@ export const HomePage: React.FC = () => {
 	const [safe, setSafe] = useState<string>('')
 	const [isSatisfiedWithLabels, setIsSatisfiedWithLabels] = useState<boolean | null>(null)
 	const [customLabels, setCustomLabels] = useState<string[]>([])
-	const [isSubmitted, setIsSubmitted] = useState(false)
-	const [allPostsCompleted, setAllPostsCompleted] = useState(false)
+	//const [isSubmitted, setIsSubmitted] = useState(false)
+	//const [allPostsCompleted, setAllPostsCompleted] = useState(false)
 	const [isFinalSubmitted, setIsFinalSubmitted] = useState(false)
 
 	const classifyPost = () => {
@@ -89,7 +89,7 @@ export const HomePage: React.FC = () => {
 			setSafe('')
 			setIsSatisfiedWithLabels(null)
 			setCustomLabels([])
-			setIsSubmitted(false)
+			//setIsSubmitted(false)
 		} else {
 			// All posts completed
 			setAllPostsCompleted(true)
