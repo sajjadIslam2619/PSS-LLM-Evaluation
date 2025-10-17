@@ -92,7 +92,7 @@ export const HomePage: React.FC = () => {
 			//setIsSubmitted(false)
 		} else {
 			// All posts completed
-			setAllPostsCompleted(true)
+			//setAllPostsCompleted(true)
 		}
 	}
 
