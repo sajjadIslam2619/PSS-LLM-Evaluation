@@ -1,11 +1,15 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 import labels from './labels.json'
 import comments from './comments.json'
+import demoPosts from './demoPosts.json'
 
 export const HomePage: React.FC = () => {
+	const navigate = useNavigate()
 	const { username, logout } = useAuth()
-	const [post, setPost] = useState('')
+	const [currentPostIndex, setCurrentPostIndex] = useState(0)
+	const [post, setPost] = useState(demoPosts[0].content)
 	const [comment, setComment] = useState('')
 	const [selectedLabels, setSelectedLabels] = useState<{name: string, percentage: number}[]>([])
 	const [empathy, setEmpathy] = useState<string>('')
@@ -14,13 +18,10 @@ export const HomePage: React.FC = () => {
 	const [isSatisfiedWithLabels, setIsSatisfiedWithLabels] = useState<boolean | null>(null)
 	const [customLabels, setCustomLabels] = useState<string[]>([])
 	const [isSubmitted, setIsSubmitted] = useState(false)
+	const [allPostsCompleted, setAllPostsCompleted] = useState(false)
+	const [isFinalSubmitted, setIsFinalSubmitted] = useState(false)
 
 	const classifyPost = () => {
-		if (!post.trim()) {
-			alert('Please enter a post first')
-			return
-		}
-		
 		// Select 2 random labels with random percentages
 		const shuffled = [...labels].sort(() => 0.5 - Math.random())
 		const randomLabels = shuffled.slice(0, 2).map(label => ({
@@ -31,11 +32,6 @@ export const HomePage: React.FC = () => {
 	}
 
 	const generateComment = () => {
-		if (!post.trim()) {
-			alert('Please enter a post first')
-			return
-		}
-		
 		// Select a random comment
 		const randomComment = comments[Math.floor(Math.random() * comments.length)]
 		setComment(randomComment)
@@ -49,12 +45,8 @@ export const HomePage: React.FC = () => {
 		}
 	}
 
-	const submitReview = () => {
+	const validateCurrentPost = () => {
 		const warnings = []
-		
-		if (!post.trim()) {
-			warnings.push('Please enter a post')
-		}
 		
 		if (selectedLabels.length === 0 && customLabels.length === 0) {
 			warnings.push('Please classify the post')
@@ -69,21 +61,27 @@ export const HomePage: React.FC = () => {
 			warnings.push('Please generate a comment')
 		}
 		
-		if (empathy === '' && relevant === '' && safe === '') {
-			warnings.push('Please evaluate the generated comment')
+		if (empathy === '' || relevant === '' || safe === '') {
+			warnings.push('Please evaluate all three categories (Empathy, Relevant, Safe)')
 		}
+		
+		return warnings
+	}
+
+	const nextPost = () => {
+		const warnings = validateCurrentPost()
 		
 		if (warnings.length > 0) {
 			alert('Please complete the following:\n• ' + warnings.join('\n• '))
 			return
 		}
 		
-		// Success - set submitted state to change button color
-		setIsSubmitted(true)
-		
-		// Clear all fields for next review after a short delay
-		setTimeout(() => {
-			setPost('')
+		// Move to next post
+		if (currentPostIndex < demoPosts.length - 1) {
+			const nextIndex = currentPostIndex + 1
+			setCurrentPostIndex(nextIndex)
+			setPost(demoPosts[nextIndex].content)
+			// Reset all fields for next post
 			setComment('')
 			setSelectedLabels([])
 			setEmpathy('')
@@ -92,7 +90,27 @@ export const HomePage: React.FC = () => {
 			setIsSatisfiedWithLabels(null)
 			setCustomLabels([])
 			setIsSubmitted(false)
-		}, 2000)
+		} else {
+			// All posts completed
+			setAllPostsCompleted(true)
+		}
+	}
+
+	const submitAllReviews = () => {
+		const warnings = validateCurrentPost()
+		
+		if (warnings.length > 0) {
+			alert('Please complete the following:\n• ' + warnings.join('\n• '))
+			return
+		}
+		
+		// Set submitted state to change button color
+		setIsFinalSubmitted(true)
+		
+		// Navigate to thank you page after a short delay
+		setTimeout(() => {
+			navigate('/thank-you')
+		}, 1500)
 	}
 
 	const EvaluationScale: React.FC<{ label: string; value: string; onChange: (value: string) => void }> = ({ label, value, onChange }) => {
@@ -145,6 +163,10 @@ export const HomePage: React.FC = () => {
 			</div>
 
 			<div className="card">
+				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+					<h2 style={{ margin: 0, fontSize: '18px' }}>Post {currentPostIndex + 1} of {demoPosts.length}</h2>
+				</div>
+				
 				<label>
 					<span>Post</span>
 					<textarea rows={6} value={post} onChange={(e) => setPost(e.target.value)} placeholder="Write your post here..." />
@@ -261,22 +283,47 @@ export const HomePage: React.FC = () => {
 
 				{comment && (
 					<div style={{ marginTop: 16, textAlign: 'center' }}>
-						<button 
-							onClick={submitReview}
-							style={{
-								padding: '8px 16px',
-								borderRadius: '6px',
-								border: '2px solid var(--primary)',
-								background: isSubmitted ? 'var(--primary)' : 'transparent',
-								color: isSubmitted ? 'white' : 'var(--primary)',
-								cursor: 'pointer',
-								fontSize: '14px',
-								fontWeight: '500',
-								transition: 'all 0.3s ease'
-							}}
-						>
-							{isSubmitted ? 'Submitted!' : 'Submit Review'}
-						</button>
+						{currentPostIndex === demoPosts.length - 1 ? (
+							<button 
+								onClick={submitAllReviews}
+								style={{
+									padding: '8px 16px',
+									borderRadius: '6px',
+									border: '2px solid var(--primary)',
+									background: isFinalSubmitted ? 'var(--primary)' : 'transparent',
+									color: isFinalSubmitted ? 'white' : 'var(--primary)',
+									cursor: 'pointer',
+									fontSize: '14px',
+									fontWeight: '500',
+									transition: 'all 0.3s ease'
+								}}
+							>
+								{isFinalSubmitted ? 'Submitted!' : 'Submit All Reviews'}
+							</button>
+						) : (
+							<button 
+								onClick={nextPost}
+								style={{
+									padding: '8px 16px',
+									borderRadius: '6px',
+									border: '2px solid var(--primary)',
+									background: 'transparent',
+									color: 'var(--primary)',
+									cursor: 'pointer',
+									fontSize: '14px',
+									fontWeight: '500',
+									transition: 'all 0.3s ease',
+									display: 'flex',
+									alignItems: 'center',
+									gap: '8px'
+								}}
+							>
+								Next Post
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+									<path d="M5 12h14M12 5l7 7-7 7"/>
+								</svg>
+							</button>
+						)}
 					</div>
 				)}
 			</div>

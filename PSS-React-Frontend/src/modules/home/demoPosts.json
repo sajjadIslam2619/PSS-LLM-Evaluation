@@ -1,0 +1,27 @@
+[
+	{
+		"id": 1,
+		"content": "I've been feeling really overwhelmed lately with work and personal life. Everything seems to be piling up and I don't know where to start. I can't sleep properly and I'm constantly worried about failing at everything.",
+		"category": "Stress"
+	},
+	{
+		"id": 2,
+		"content": "Today was another day where I felt completely empty inside. Nothing brings me joy anymore, not even the things I used to love. I feel like I'm just going through the motions of life without any real purpose or meaning.",
+		"category": "Depression"
+	},
+	{
+		"id": 3,
+		"content": "I had another nightmare about the accident last night. I can't seem to escape these flashbacks and they're affecting my daily life. I jump at loud noises and avoid certain places that remind me of what happened.",
+		"category": "PTSD"
+	},
+	{
+		"id": 4,
+		"content": "I'm having panic attacks almost every day now. My heart races, I can't breathe, and I feel like I'm going to die. I'm scared to leave my house because I never know when the next attack will happen.",
+		"category": "Anxiety"
+	},
+	{
+		"id": 5,
+		"content": "I've been thinking a lot about ending it all lately. The pain feels unbearable and I don't see any way out. I've written letters to my family but I'm scared of what will happen if I actually go through with it.",
+		"category": "Suicidal"
+	}
+]
