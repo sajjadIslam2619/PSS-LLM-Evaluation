@@ -117,24 +117,27 @@ export const HomePage: React.FC = () => {
 		const options = ['Agree', 'Neutral', 'Disagree']
 		
 		return (
-			<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-				<span style={{ minWidth: '80px', fontSize: '14px', color: 'var(--muted)' }}>{label}:</span>
-				<div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+			<div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+				<span style={{ fontSize: '14px', color: 'var(--muted)' }}>{label}:</span>
+				<div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
 					{options.map((option) => (
 						<button
 							key={option}
 							type="button"
 							onClick={() => onChange(option)}
 							style={{
-								padding: '6px 8px',
-								borderRadius: '4px',
+								padding: '8px 12px',
+								borderRadius: '6px',
 								border: '2px solid',
 								borderColor: value === option ? 'var(--primary)' : '#2a355f',
 								background: value === option ? 'var(--primary)' : 'transparent',
 								color: value === option ? 'white' : 'var(--text)',
 								cursor: 'pointer',
-								fontSize: '11px',
-								whiteSpace: 'nowrap'
+								fontSize: '13px',
+								fontWeight: '500',
+								minWidth: '80px',
+								flex: '1',
+								maxWidth: '120px'
 							}}
 						>
 							{option}
@@ -147,19 +150,30 @@ export const HomePage: React.FC = () => {
 
 	return (
 		<div className="container">
-			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-				<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-					<h1 style={{ margin: 0 }}>Welcome,</h1>
+			<div style={{ 
+				display: 'flex', 
+				flexDirection: window.innerWidth < 480 ? 'column' : 'row',
+				justifyContent: 'space-between', 
+				alignItems: window.innerWidth < 480 ? 'flex-start' : 'center', 
+				gap: window.innerWidth < 480 ? '12px' : '0',
+				marginBottom: 16 
+			}}>
+				<div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '20px' : '24px' }}>Welcome,</h1>
 					<span style={{ 
 						color: 'var(--primary)', 
-						fontSize: '24px', 
+						fontSize: window.innerWidth < 480 ? '18px' : '24px', 
 						fontWeight: '600',
 						textTransform: 'capitalize'
 					}}>
 						{username}
 					</span>
 				</div>
-				<button onClick={logout} style={{ padding: '6px 12px', fontSize: '14px' }}>Logout</button>
+				<button onClick={logout} style={{ 
+					padding: window.innerWidth < 480 ? '8px 16px' : '6px 12px', 
+					fontSize: window.innerWidth < 480 ? '14px' : '14px',
+					alignSelf: window.innerWidth < 480 ? 'flex-start' : 'center'
+				}}>Logout</button>
 			</div>
 
 			<div className="card">
@@ -171,22 +185,23 @@ export const HomePage: React.FC = () => {
 					<span>Post</span>
 					<textarea rows={6} value={post} onChange={(e) => setPost(e.target.value)} placeholder="Write your post here..." />
 				</label>
-				<div style={{ display: 'flex', gap: 8 }}>
-					<button onClick={classifyPost}>Classify post</button>
-					<button onClick={generateComment}>Generate comment</button>
+				<div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+					<button onClick={classifyPost} style={{ flex: '1', minWidth: '120px' }}>Classify post</button>
+					<button onClick={generateComment} style={{ flex: '1', minWidth: '120px' }}>Generate comment</button>
 				</div>
 				
 				{selectedLabels.length > 0 && (
 					<div style={{ marginTop: 12 }}>
 						<span style={{ color: 'var(--muted)', fontSize: '14px' }}>Detected labels:</span>
-						<div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+						<div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
 							{selectedLabels.map((label, index) => (
 								<span key={index} style={{ 
 									background: 'var(--primary)', 
 									color: 'white', 
 									padding: '4px 8px', 
 									borderRadius: '4px', 
-									fontSize: '12px' 
+									fontSize: '12px',
+									whiteSpace: 'nowrap'
 								}}>
 									{label.name} {label.percentage}%
 								</span>
@@ -194,40 +209,55 @@ export const HomePage: React.FC = () => {
 						</div>
 						
 						<div style={{ marginTop: 12 }}>
-							<span style={{ color: 'var(--muted)', fontSize: '14px' }}>Are you satisfied with detected labels?</span>
-							<div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-								<button
-									type="button"
-									onClick={() => setIsSatisfiedWithLabels(true)}
-									style={{
-										padding: '6px 12px',
-										borderRadius: '4px',
-										border: '2px solid',
-										borderColor: isSatisfiedWithLabels === true ? 'var(--primary)' : '#2a355f',
-										background: isSatisfiedWithLabels === true ? 'var(--primary)' : 'transparent',
-										color: isSatisfiedWithLabels === true ? 'white' : 'var(--text)',
-										cursor: 'pointer',
-										fontSize: '12px'
-									}}
-								>
-									Yes
-								</button>
-								<button
-									type="button"
-									onClick={() => setIsSatisfiedWithLabels(false)}
-									style={{
-										padding: '6px 12px',
-										borderRadius: '4px',
-										border: '2px solid',
-										borderColor: isSatisfiedWithLabels === false ? 'var(--primary)' : '#2a355f',
-										background: isSatisfiedWithLabels === false ? 'var(--primary)' : 'transparent',
-										color: isSatisfiedWithLabels === false ? 'white' : 'var(--text)',
-										cursor: 'pointer',
-										fontSize: '12px'
-									}}
-								>
-									No
-								</button>
+							<div style={{ 
+								display: 'flex', 
+								flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+								alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
+								gap: window.innerWidth < 768 ? '8px' : '12px'
+							}}>
+								<span style={{ 
+									color: 'var(--muted)', 
+									fontSize: '12px',
+									whiteSpace: 'nowrap'
+								}}>Are you satisfied with detected labels?</span>
+								<div style={{ display: 'flex', gap: 8 }}>
+									<button
+										type="button"
+										onClick={() => setIsSatisfiedWithLabels(true)}
+										style={{
+											padding: '8px 16px',
+											borderRadius: '6px',
+											border: '2px solid',
+											borderColor: isSatisfiedWithLabels === true ? 'var(--primary)' : '#2a355f',
+											background: isSatisfiedWithLabels === true ? 'var(--primary)' : 'transparent',
+											color: isSatisfiedWithLabels === true ? 'white' : 'var(--text)',
+											cursor: 'pointer',
+											fontSize: '13px',
+											fontWeight: '500',
+											minWidth: '60px'
+										}}
+									>
+										Yes
+									</button>
+									<button
+										type="button"
+										onClick={() => setIsSatisfiedWithLabels(false)}
+										style={{
+											padding: '8px 16px',
+											borderRadius: '6px',
+											border: '2px solid',
+											borderColor: isSatisfiedWithLabels === false ? 'var(--primary)' : '#2a355f',
+											background: isSatisfiedWithLabels === false ? 'var(--primary)' : 'transparent',
+											color: isSatisfiedWithLabels === false ? 'white' : 'var(--text)',
+											cursor: 'pointer',
+											fontSize: '13px',
+											fontWeight: '500',
+											minWidth: '60px'
+										}}
+									>
+										No
+									</button>
+								</div>
 							</div>
 						</div>
 						
