@@ -115,29 +115,31 @@ export const HomePage: React.FC = () => {
 
 	const EvaluationScale: React.FC<{ label: string; value: string; onChange: (value: string) => void }> = ({ label, value, onChange }) => {
 		const options = ['Agree', 'Neutral', 'Disagree']
+		const isMobile = window.innerWidth < 480
 		
 		return (
-			<div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-				<span style={{ fontSize: '14px', color: 'var(--muted)' }}>{label}:</span>
-				<div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+			<div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 4 : 8 }}>
+				<span style={{ fontSize: isMobile ? '12px' : '14px', color: 'var(--muted)' }}>{label}:</span>
+				<div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 4 : 6 }}>
 					{options.map((option) => (
 						<button
 							key={option}
 							type="button"
 							onClick={() => onChange(option)}
 							style={{
-								padding: '8px 12px',
+								padding: isMobile ? '6px 8px' : '8px 12px',
 								borderRadius: '6px',
 								border: '2px solid',
 								borderColor: value === option ? 'var(--primary)' : '#2a355f',
 								background: value === option ? 'var(--primary)' : 'transparent',
 								color: value === option ? 'white' : 'var(--text)',
 								cursor: 'pointer',
-								fontSize: '13px',
+								fontSize: isMobile ? '12px' : '13px',
 								fontWeight: '500',
-								minWidth: '80px',
+								minWidth: isMobile ? '60px' : '80px',
 								flex: '1',
-								maxWidth: '120px'
+								maxWidth: isMobile ? '100px' : '120px',
+								minHeight: isMobile ? '36px' : 'auto'
 							}}
 						>
 							{option}
@@ -155,14 +157,14 @@ export const HomePage: React.FC = () => {
 				flexDirection: window.innerWidth < 480 ? 'column' : 'row',
 				justifyContent: 'space-between', 
 				alignItems: window.innerWidth < 480 ? 'flex-start' : 'center', 
-				gap: window.innerWidth < 480 ? '12px' : '0',
-				marginBottom: 16 
+				gap: window.innerWidth < 480 ? '8px' : '0',
+				marginBottom: window.innerWidth < 480 ? 8 : 16 
 			}}>
-				<div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '20px' : '24px' }}>Welcome,</h1>
+				<div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '18px' : '24px' }}>Welcome,</h1>
 					<span style={{ 
 						color: 'var(--primary)', 
-						fontSize: window.innerWidth < 480 ? '18px' : '24px', 
+						fontSize: window.innerWidth < 480 ? '16px' : '24px', 
 						fontWeight: '600',
 						textTransform: 'capitalize'
 					}}>
@@ -170,20 +172,29 @@ export const HomePage: React.FC = () => {
 					</span>
 				</div>
 				<button onClick={logout} style={{ 
-					padding: window.innerWidth < 480 ? '8px 16px' : '6px 12px', 
-					fontSize: window.innerWidth < 480 ? '14px' : '14px',
+					padding: window.innerWidth < 480 ? '8px 12px' : '6px 12px', 
+					fontSize: window.innerWidth < 480 ? '13px' : '14px',
 					alignSelf: window.innerWidth < 480 ? 'flex-start' : 'center'
 				}}>Logout</button>
 			</div>
 
 			<div className="card">
-				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-					<h2 style={{ margin: 0, fontSize: '18px' }}>Post {currentPostIndex + 1} of {demoPosts.length}</h2>
+				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: window.innerWidth < 480 ? 8 : 16 }}>
+					<h2 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '16px' : '18px' }}>Post {currentPostIndex + 1} of {demoPosts.length}</h2>
 				</div>
 				
 				<label>
 					<span>Post</span>
-					<textarea rows={6} value={post} onChange={(e) => setPost(e.target.value)} placeholder="Write your post here..." />
+					<textarea 
+						rows={window.innerWidth < 480 ? 4 : 6} 
+						value={post} 
+						onChange={(e) => setPost(e.target.value)} 
+						placeholder="Write your post here..." 
+						style={{ 
+							minHeight: window.innerWidth < 480 ? '80px' : 'auto',
+							maxHeight: window.innerWidth < 480 ? '120px' : 'auto'
+						}}
+					/>
 				</label>
 				<div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
 					<button onClick={classifyPost} style={{ flex: '1', minWidth: '120px' }}>Classify post</button>
@@ -297,13 +308,22 @@ export const HomePage: React.FC = () => {
 				
 				<label>
 					<span>Comment</span>
-					<textarea rows={4} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Generated comment will appear here..." />
+					<textarea 
+						rows={window.innerWidth < 480 ? 3 : 4} 
+						value={comment} 
+						onChange={(e) => setComment(e.target.value)} 
+						placeholder="Generated comment will appear here..." 
+						style={{ 
+							minHeight: window.innerWidth < 480 ? '60px' : 'auto',
+							maxHeight: window.innerWidth < 480 ? '100px' : 'auto'
+						}}
+					/>
 				</label>
 
 				{comment && (
-					<div style={{ marginTop: 16 }}>
-						<h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: 'var(--text)' }}>Generated Comment Evaluation</h3>
-						<div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+					<div style={{ marginTop: window.innerWidth < 480 ? 8 : 16 }}>
+						<h3 style={{ margin: '0 0 8px 0', fontSize: window.innerWidth < 480 ? '14px' : '16px', color: 'var(--text)' }}>Generated Comment Evaluation</h3>
+						<div style={{ display: 'flex', flexDirection: 'column', gap: window.innerWidth < 480 ? 8 : 12 }}>
 							<EvaluationScale label="Empathy" value={empathy} onChange={setEmpathy} />
 							<EvaluationScale label="Relevant" value={relevant} onChange={setRelevant} />
 							<EvaluationScale label="Safe" value={safe} onChange={setSafe} />
