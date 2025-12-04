@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 import labels from './labels.json'
@@ -11,7 +11,7 @@ export const HomePage: React.FC = () => {
 	const [currentPostIndex, setCurrentPostIndex] = useState(0)
 	const [post, setPost] = useState(demoPosts[0].content)
 	const [comment, setComment] = useState('')
-	const [selectedLabels, setSelectedLabels] = useState<{name: string, percentage: number}[]>([])
+	const [selectedLabels, setSelectedLabels] = useState<{ name: string, percentage: number }[]>([])
 	const [empathy, setEmpathy] = useState<string>('')
 	const [relevant, setRelevant] = useState<string>('')
 	const [safe, setSafe] = useState<string>('')
@@ -20,6 +20,11 @@ export const HomePage: React.FC = () => {
 	//const [isSubmitted, setIsSubmitted] = useState(false)
 	//const [allPostsCompleted, setAllPostsCompleted] = useState(false)
 	const [isFinalSubmitted, setIsFinalSubmitted] = useState(false)
+
+	// Auto-classify post when it loads
+	useEffect(() => {
+		classifyPost()
+	}, [currentPostIndex])
 
 	const classifyPost = () => {
 		// Select 2 random labels with random percentages
@@ -47,35 +52,35 @@ export const HomePage: React.FC = () => {
 
 	const validateCurrentPost = () => {
 		const warnings = []
-		
+
 		if (selectedLabels.length === 0 && customLabels.length === 0) {
 			warnings.push('Please classify the post')
 		}
-		
+
 		// Check if user selected "No" for satisfaction but didn't select custom labels
 		if (isSatisfiedWithLabels === false && customLabels.length === 0) {
 			warnings.push('Please select labels since you are not satisfied with detected labels')
 		}
-		
+
 		if (!comment.trim()) {
 			warnings.push('Please generate a comment')
 		}
-		
+
 		if (empathy === '' || relevant === '' || safe === '') {
 			warnings.push('Please evaluate all three categories (Empathy, Relevant, Safe)')
 		}
-		
+
 		return warnings
 	}
 
 	const nextPost = () => {
 		const warnings = validateCurrentPost()
-		
+
 		if (warnings.length > 0) {
 			alert('Please complete the following:\n• ' + warnings.join('\n• '))
 			return
 		}
-		
+
 		// Move to next post
 		if (currentPostIndex < demoPosts.length - 1) {
 			const nextIndex = currentPostIndex + 1
@@ -98,15 +103,15 @@ export const HomePage: React.FC = () => {
 
 	const submitAllReviews = () => {
 		const warnings = validateCurrentPost()
-		
+
 		if (warnings.length > 0) {
 			alert('Please complete the following:\n• ' + warnings.join('\n• '))
 			return
 		}
-		
+
 		// Set submitted state to change button color
 		setIsFinalSubmitted(true)
-		
+
 		// Navigate to thank you page after a short delay
 		setTimeout(() => {
 			navigate('/thank-you')
@@ -114,9 +119,9 @@ export const HomePage: React.FC = () => {
 	}
 
 	const EvaluationScale: React.FC<{ label: string; value: string; onChange: (value: string) => void }> = ({ label, value, onChange }) => {
-		const options = ['Agree', 'Neutral', 'Disagree']
+		const options = ['Agree', 'Somewhat Agree', 'Neutral', 'Somewhat Disagree', 'Disagree', 'Not Applicable']
 		const isMobile = window.innerWidth < 480
-		
+
 		return (
 			<div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 4 : 8 }}>
 				<span style={{ fontSize: isMobile ? '12px' : '14px', color: 'var(--muted)' }}>{label}:</span>
@@ -152,27 +157,27 @@ export const HomePage: React.FC = () => {
 
 	return (
 		<div className="container">
-			<div style={{ 
-				display: 'flex', 
+			<div style={{
+				display: 'flex',
 				flexDirection: window.innerWidth < 480 ? 'column' : 'row',
-				justifyContent: 'space-between', 
-				alignItems: window.innerWidth < 480 ? 'flex-start' : 'center', 
+				justifyContent: 'space-between',
+				alignItems: window.innerWidth < 480 ? 'flex-start' : 'center',
 				gap: window.innerWidth < 480 ? '8px' : '0',
-				marginBottom: window.innerWidth < 480 ? 8 : 16 
+				marginBottom: window.innerWidth < 480 ? 8 : 16
 			}}>
 				<div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
 					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '18px' : '24px' }}>Welcome,</h1>
-					<span style={{ 
-						color: 'var(--primary)', 
-						fontSize: window.innerWidth < 480 ? '16px' : '24px', 
+					<span style={{
+						color: 'var(--primary)',
+						fontSize: window.innerWidth < 480 ? '16px' : '24px',
 						fontWeight: '600',
 						textTransform: 'capitalize'
 					}}>
 						{username}
 					</span>
 				</div>
-				<button onClick={logout} style={{ 
-					padding: window.innerWidth < 480 ? '8px 12px' : '6px 12px', 
+				<button onClick={logout} style={{
+					padding: window.innerWidth < 480 ? '8px 12px' : '6px 12px',
 					fontSize: window.innerWidth < 480 ? '13px' : '14px',
 					alignSelf: window.innerWidth < 480 ? 'flex-start' : 'center'
 				}}>Logout</button>
@@ -182,143 +187,284 @@ export const HomePage: React.FC = () => {
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: window.innerWidth < 480 ? 8 : 16 }}>
 					<h2 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '16px' : '18px' }}>Post {currentPostIndex + 1} of {demoPosts.length}</h2>
 				</div>
-				
-				<label>
-					<span>Post</span>
-					<textarea 
-						rows={window.innerWidth < 480 ? 4 : 6} 
-						value={post} 
-						onChange={(e) => setPost(e.target.value)} 
-						placeholder="Write your post here..." 
-						style={{ 
-							minHeight: window.innerWidth < 480 ? '80px' : 'auto',
-							maxHeight: window.innerWidth < 480 ? '120px' : 'auto'
-						}}
-					/>
-				</label>
-				<div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-					<button onClick={classifyPost} style={{ flex: '1', minWidth: '120px' }}>Classify post</button>
-					<button onClick={generateComment} style={{ flex: '1', minWidth: '120px' }}>Generate comment</button>
-				</div>
-				
-				{selectedLabels.length > 0 && (
-					<div style={{ marginTop: 12 }}>
-						<span style={{ color: 'var(--muted)', fontSize: '14px' }}>Detected labels:</span>
-						<div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
-							{selectedLabels.map((label, index) => (
-								<span key={index} style={{ 
-									background: 'var(--primary)', 
-									color: 'white', 
-									padding: '4px 8px', 
-									borderRadius: '4px', 
-									fontSize: '12px',
-									whiteSpace: 'nowrap'
-								}}>
-									{label.name} {label.percentage}%
-								</span>
-							))}
-						</div>
-						
-						<div style={{ marginTop: 12 }}>
-							<div style={{ 
-								display: 'flex', 
-								flexDirection: window.innerWidth < 768 ? 'column' : 'row',
-								alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
-								gap: window.innerWidth < 768 ? '8px' : '12px'
+
+				{/* Main layout: Left panel (Post + Comment) and Right panel (Labels) */}
+				<div style={{
+					display: 'flex',
+					flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+					gap: window.innerWidth < 768 ? '16px' : '24px',
+					marginBottom: '16px'
+				}}>
+					{/* Left panel: Post and Comment */}
+					<div style={{ flex: '1', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+						{/* Post Section */}
+						<label>
+							<span>Post</span>
+							<textarea
+								rows={window.innerWidth < 480 ? 8 : 15}
+								value={post}
+								onChange={(e) => setPost(e.target.value)}
+								placeholder="Write your post here..."
+								style={{
+									minHeight: window.innerWidth < 480 ? '200px' : '400px',
+									resize: 'vertical'
+								}}
+							/>
+						</label>
+
+						{/* Labels section for mobile - appears after post */}
+						{window.innerWidth < 768 && selectedLabels.length > 0 && (
+							<div style={{
+								display: 'flex',
+								flexDirection: 'column',
+								gap: '10px'
 							}}>
-								<span style={{ 
-									color: 'var(--muted)', 
-									fontSize: '12px',
-									whiteSpace: 'nowrap'
-								}}>Are you satisfied with detected labels?</span>
-								<div style={{ display: 'flex', gap: 8 }}>
-									<button
-										type="button"
-										onClick={() => setIsSatisfiedWithLabels(true)}
-										style={{
-											padding: '8px 16px',
-											borderRadius: '6px',
-											border: '2px solid',
-											borderColor: isSatisfiedWithLabels === true ? 'var(--primary)' : '#2a355f',
-											background: isSatisfiedWithLabels === true ? 'var(--primary)' : 'transparent',
-											color: isSatisfiedWithLabels === true ? 'white' : 'var(--text)',
-											cursor: 'pointer',
-											fontSize: '13px',
-											fontWeight: '500',
-											minWidth: '60px'
-										}}
-									>
-										Yes
-									</button>
-									<button
-										type="button"
-										onClick={() => setIsSatisfiedWithLabels(false)}
-										style={{
-											padding: '8px 16px',
-											borderRadius: '6px',
-											border: '2px solid',
-											borderColor: isSatisfiedWithLabels === false ? 'var(--primary)' : '#2a355f',
-											background: isSatisfiedWithLabels === false ? 'var(--primary)' : 'transparent',
-											color: isSatisfiedWithLabels === false ? 'white' : 'var(--text)',
-											cursor: 'pointer',
-											fontSize: '13px',
-											fontWeight: '500',
-											minWidth: '60px'
-										}}
-									>
-										No
-									</button>
-								</div>
-							</div>
-						</div>
-						
-						{isSatisfiedWithLabels === false && (
-							<div style={{ marginTop: 12 }}>
-								<span style={{ color: 'var(--muted)', fontSize: '14px' }}>Select labels:</span>
-								<div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
-									{labels.map((label) => (
-										<button
-											key={label}
-											type="button"
-											onClick={() => handleLabelSelection(label)}
-											style={{
-												padding: '4px 8px',
+								<div>
+									<span style={{ color: 'var(--muted)', fontSize: window.innerWidth < 480 ? '12px' : '13px', fontWeight: '500' }}>Detected labels:</span>
+									<div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+										{selectedLabels.map((label, index) => (
+											<span key={index} style={{
+												background: 'var(--primary)',
+												color: 'white',
+												padding: '3px 6px',
 												borderRadius: '4px',
-												border: '2px solid',
-												borderColor: customLabels.includes(label) ? 'var(--primary)' : '#2a355f',
-												background: customLabels.includes(label) ? 'var(--primary)' : 'transparent',
-												color: customLabels.includes(label) ? 'white' : 'var(--text)',
-												cursor: 'pointer',
-												fontSize: '12px'
-											}}
-										>
-											{label}
-										</button>
-									))}
+												fontSize: window.innerWidth < 480 ? '10px' : '11px',
+												whiteSpace: 'nowrap'
+											}}>
+												{label.name} {label.percentage}%
+											</span>
+										))}
+									</div>
 								</div>
-								{customLabels.length > 0 && (
-									<div style={{ marginTop: 8 }}>
-										<span style={{ color: 'var(--muted)', fontSize: '12px' }}>Selected: {customLabels.join(', ')}</span>
+
+								<div>
+									<div style={{
+										display: 'flex',
+										flexDirection: 'column',
+										gap: '6px'
+									}}>
+										<span style={{
+											color: 'var(--muted)',
+											fontSize: window.innerWidth < 480 ? '10px' : '11px',
+											fontWeight: '500'
+										}}>Are you satisfied with detected labels?</span>
+										<div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+											<button
+												type="button"
+												onClick={() => setIsSatisfiedWithLabels(true)}
+												style={{
+													padding: window.innerWidth < 480 ? '6px 10px' : '6px 12px',
+													borderRadius: '4px',
+													border: '2px solid',
+													borderColor: isSatisfiedWithLabels === true ? 'var(--primary)' : '#2a355f',
+													background: isSatisfiedWithLabels === true ? 'var(--primary)' : 'transparent',
+													color: isSatisfiedWithLabels === true ? 'white' : 'var(--text)',
+													cursor: 'pointer',
+													fontSize: window.innerWidth < 480 ? '11px' : '12px',
+													fontWeight: '500',
+													flex: '1',
+													minWidth: '50px'
+												}}
+											>
+												Yes
+											</button>
+											<button
+												type="button"
+												onClick={() => setIsSatisfiedWithLabels(false)}
+												style={{
+													padding: window.innerWidth < 480 ? '6px 10px' : '6px 12px',
+													borderRadius: '4px',
+													border: '2px solid',
+													borderColor: isSatisfiedWithLabels === false ? 'var(--primary)' : '#2a355f',
+													background: isSatisfiedWithLabels === false ? 'var(--primary)' : 'transparent',
+													color: isSatisfiedWithLabels === false ? 'white' : 'var(--text)',
+													cursor: 'pointer',
+													fontSize: window.innerWidth < 480 ? '11px' : '12px',
+													fontWeight: '500',
+													flex: '1',
+													minWidth: '50px'
+												}}
+											>
+												No
+											</button>
+										</div>
+									</div>
+								</div>
+
+								{isSatisfiedWithLabels === false && (
+									<div>
+										<span style={{ color: 'var(--muted)', fontSize: window.innerWidth < 480 ? '12px' : '13px', fontWeight: '500' }}>Select labels:</span>
+										<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+											{labels.map((label) => (
+												<button
+													key={label}
+													type="button"
+													onClick={() => handleLabelSelection(label)}
+													style={{
+														padding: window.innerWidth < 480 ? '3px 6px' : '4px 7px',
+														borderRadius: '4px',
+														border: '2px solid',
+														borderColor: customLabels.includes(label) ? 'var(--primary)' : '#2a355f',
+														background: customLabels.includes(label) ? 'var(--primary)' : 'transparent',
+														color: customLabels.includes(label) ? 'white' : 'var(--text)',
+														cursor: 'pointer',
+														fontSize: window.innerWidth < 480 ? '10px' : '11px'
+													}}
+												>
+													{label}
+												</button>
+											))}
+										</div>
+										{customLabels.length > 0 && (
+											<div style={{ marginTop: 6 }}>
+												<span style={{ color: 'var(--muted)', fontSize: window.innerWidth < 480 ? '10px' : '11px' }}>Selected: {customLabels.join(', ')}</span>
+											</div>
+										)}
 									</div>
 								)}
 							</div>
 						)}
+
+						{/* Generate Comment button */}
+						<div>
+							<button onClick={generateComment} style={{ width: '100%', maxWidth: '200px' }}>Generate comment</button>
+						</div>
+
+						{/* Comment Section */}
+						<label>
+							<span>Comment</span>
+							<textarea
+								rows={window.innerWidth < 480 ? 3 : 4}
+								value={comment}
+								onChange={(e) => setComment(e.target.value)}
+								placeholder="Generated comment will appear here..."
+								style={{
+									minHeight: window.innerWidth < 480 ? '60px' : 'auto',
+									maxHeight: window.innerWidth < 480 ? '100px' : 'auto'
+								}}
+							/>
+						</label>
 					</div>
-				)}
-				
-				<label>
-					<span>Comment</span>
-					<textarea 
-						rows={window.innerWidth < 480 ? 3 : 4} 
-						value={comment} 
-						onChange={(e) => setComment(e.target.value)} 
-						placeholder="Generated comment will appear here..." 
-						style={{ 
-							minHeight: window.innerWidth < 480 ? '60px' : 'auto',
-							maxHeight: window.innerWidth < 480 ? '100px' : 'auto'
-						}}
-					/>
-				</label>
+
+					{/* Right panel: Labels (parallel to post only) - Desktop only */}
+					{window.innerWidth >= 768 && (
+						<div style={{
+							flex: '0 0 auto',
+							width: '280px',
+							display: 'flex',
+							flexDirection: 'column',
+							gap: '10px'
+						}}>
+							{selectedLabels.length > 0 && (
+								<>
+									<div>
+										<span style={{ color: 'var(--muted)', fontSize: '13px', fontWeight: '500' }}>Detected labels:</span>
+										<div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+											{selectedLabels.map((label, index) => (
+												<span key={index} style={{
+													background: 'var(--primary)',
+													color: 'white',
+													padding: '3px 6px',
+													borderRadius: '4px',
+													fontSize: '11px',
+													whiteSpace: 'nowrap'
+												}}>
+													{label.name} {label.percentage}%
+												</span>
+											))}
+										</div>
+									</div>
+
+									<div>
+										<div style={{
+											display: 'flex',
+											flexDirection: 'column',
+											gap: '6px'
+										}}>
+											<span style={{
+												color: 'var(--muted)',
+												fontSize: '11px',
+												fontWeight: '500'
+											}}>Are you satisfied with detected labels?</span>
+											<div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+												<button
+													type="button"
+													onClick={() => setIsSatisfiedWithLabels(true)}
+													style={{
+														padding: '6px 12px',
+														borderRadius: '4px',
+														border: '2px solid',
+														borderColor: isSatisfiedWithLabels === true ? 'var(--primary)' : '#2a355f',
+														background: isSatisfiedWithLabels === true ? 'var(--primary)' : 'transparent',
+														color: isSatisfiedWithLabels === true ? 'white' : 'var(--text)',
+														cursor: 'pointer',
+														fontSize: '12px',
+														fontWeight: '500',
+														flex: '1',
+														minWidth: '50px'
+													}}
+												>
+													Yes
+												</button>
+												<button
+													type="button"
+													onClick={() => setIsSatisfiedWithLabels(false)}
+													style={{
+														padding: '6px 12px',
+														borderRadius: '4px',
+														border: '2px solid',
+														borderColor: isSatisfiedWithLabels === false ? 'var(--primary)' : '#2a355f',
+														background: isSatisfiedWithLabels === false ? 'var(--primary)' : 'transparent',
+														color: isSatisfiedWithLabels === false ? 'white' : 'var(--text)',
+														cursor: 'pointer',
+														fontSize: '12px',
+														fontWeight: '500',
+														flex: '1',
+														minWidth: '50px'
+													}}
+												>
+													No
+												</button>
+											</div>
+										</div>
+									</div>
+
+									{isSatisfiedWithLabels === false && (
+										<div>
+											<span style={{ color: 'var(--muted)', fontSize: '13px', fontWeight: '500' }}>Select labels:</span>
+											<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+												{labels.map((label) => (
+													<button
+														key={label}
+														type="button"
+														onClick={() => handleLabelSelection(label)}
+														style={{
+															padding: '4px 7px',
+															borderRadius: '4px',
+															border: '2px solid',
+															borderColor: customLabels.includes(label) ? 'var(--primary)' : '#2a355f',
+															background: customLabels.includes(label) ? 'var(--primary)' : 'transparent',
+															color: customLabels.includes(label) ? 'white' : 'var(--text)',
+															cursor: 'pointer',
+															fontSize: '11px'
+														}}
+													>
+														{label}
+													</button>
+												))}
+											</div>
+											{customLabels.length > 0 && (
+												<div style={{ marginTop: 6 }}>
+													<span style={{ color: 'var(--muted)', fontSize: '11px' }}>Selected: {customLabels.join(', ')}</span>
+												</div>
+											)}
+										</div>
+									)}
+								</>
+							)}
+						</div>
+					)}
+				</div>
 
 				{comment && (
 					<div style={{ marginTop: window.innerWidth < 480 ? 8 : 16 }}>
@@ -334,7 +480,7 @@ export const HomePage: React.FC = () => {
 				{comment && (
 					<div style={{ marginTop: 16, textAlign: 'center' }}>
 						{currentPostIndex === demoPosts.length - 1 ? (
-							<button 
+							<button
 								onClick={submitAllReviews}
 								style={{
 									padding: '8px 16px',
@@ -351,7 +497,7 @@ export const HomePage: React.FC = () => {
 								{isFinalSubmitted ? 'Submitted!' : 'Submit All Reviews'}
 							</button>
 						) : (
-							<button 
+							<button
 								onClick={nextPost}
 								style={{
 									padding: '8px 16px',
@@ -370,7 +516,7 @@ export const HomePage: React.FC = () => {
 							>
 								Next Post
 								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-									<path d="M5 12h14M12 5l7 7-7 7"/>
+									<path d="M5 12h14M12 5l7 7-7 7" />
 								</svg>
 							</button>
 						)}
