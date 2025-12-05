@@ -10,7 +10,7 @@ export const HomePage: React.FC = () => {
 	const { username, logout } = useAuth()
 	const [currentPostIndex, setCurrentPostIndex] = useState(0)
 	const [post, setPost] = useState(demoPosts[0].content)
-	const [comment, setComment] = useState('')
+	const [response, setResponse] = useState('')
 	const [selectedLabels, setSelectedLabels] = useState<{ name: string, percentage: number }[]>([])
 	const [empathy, setEmpathy] = useState<string>('')
 	const [relevant, setRelevant] = useState<string>('')
@@ -20,6 +20,7 @@ export const HomePage: React.FC = () => {
 	//const [isSubmitted, setIsSubmitted] = useState(false)
 	//const [allPostsCompleted, setAllPostsCompleted] = useState(false)
 	const [isFinalSubmitted, setIsFinalSubmitted] = useState(false)
+	const [userCustomResponse, setUserCustomResponse] = useState('')
 
 	// Auto-classify post when it loads
 	useEffect(() => {
@@ -36,10 +37,10 @@ export const HomePage: React.FC = () => {
 		setSelectedLabels(randomLabels)
 	}
 
-	const generateComment = () => {
-		// Select a random comment
-		const randomComment = comments[Math.floor(Math.random() * comments.length)]
-		setComment(randomComment)
+	const generateResponse = () => {
+		// Select a random response
+		const randomResponse = comments[Math.floor(Math.random() * comments.length)]
+		setResponse(randomResponse)
 	}
 
 	const handleLabelSelection = (label: string) => {
@@ -62,13 +63,13 @@ export const HomePage: React.FC = () => {
 			warnings.push('Please select labels since you are not satisfied with detected labels')
 		}
 
-		if (!comment.trim()) {
-			warnings.push('Please generate a comment')
+		if (!response.trim()) {
+			warnings.push('Please generate a response')
 		}
 
-		if (empathy === '' || relevant === '' || safe === '') {
-			warnings.push('Please evaluate all three categories (Empathy, Relevant, Safe)')
-		}
+		// if (empathy === '' || relevant === '' || safe === '') {
+		// 	warnings.push('Please evaluate all three categories (Empathy, Relevant, Safe)')
+		// }
 
 		return warnings
 	}
@@ -87,7 +88,8 @@ export const HomePage: React.FC = () => {
 			setCurrentPostIndex(nextIndex)
 			setPost(demoPosts[nextIndex].content)
 			// Reset all fields for next post
-			setComment('')
+			setResponse('')
+			setUserCustomResponse('')
 			setSelectedLabels([])
 			setEmpathy('')
 			setRelevant('')
@@ -124,7 +126,7 @@ export const HomePage: React.FC = () => {
 
 		return (
 			<div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 4 : 8 }}>
-				<span style={{ fontSize: isMobile ? '12px' : '14px', color: 'var(--muted)' }}>{label}:</span>
+				<span style={{ fontSize: isMobile ? '14px' : '16px', color: 'var(--muted)' }}>{label}:</span>
 				<div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 4 : 6 }}>
 					{options.map((option) => (
 						<button
@@ -139,7 +141,7 @@ export const HomePage: React.FC = () => {
 								background: value === option ? 'var(--primary)' : 'transparent',
 								color: value === option ? 'white' : 'var(--text)',
 								cursor: 'pointer',
-								fontSize: isMobile ? '12px' : '13px',
+								fontSize: isMobile ? '13px' : '14px',
 								fontWeight: '500',
 								minWidth: isMobile ? '60px' : '80px',
 								flex: '1',
@@ -166,10 +168,10 @@ export const HomePage: React.FC = () => {
 				marginBottom: window.innerWidth < 480 ? 8 : 16
 			}}>
 				<div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '18px' : '24px' }}>Welcome,</h1>
+					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '20px' : '28px' }}>Welcome,</h1>
 					<span style={{
 						color: 'var(--primary)',
-						fontSize: window.innerWidth < 480 ? '16px' : '24px',
+						fontSize: window.innerWidth < 480 ? '18px' : '28px',
 						fontWeight: '600',
 						textTransform: 'capitalize'
 					}}>
@@ -178,14 +180,14 @@ export const HomePage: React.FC = () => {
 				</div>
 				<button onClick={logout} style={{
 					padding: window.innerWidth < 480 ? '8px 12px' : '6px 12px',
-					fontSize: window.innerWidth < 480 ? '13px' : '14px',
+					fontSize: window.innerWidth < 480 ? '14px' : '15px',
 					alignSelf: window.innerWidth < 480 ? 'flex-start' : 'center'
 				}}>Logout</button>
 			</div>
 
 			<div className="card">
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: window.innerWidth < 480 ? 8 : 16 }}>
-					<h2 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '16px' : '18px' }}>Post {currentPostIndex + 1} of {demoPosts.length}</h2>
+					<h2 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '18px' : '20px' }}>Social Media Post {currentPostIndex + 1} of {demoPosts.length}</h2>
 				</div>
 
 				{/* Main layout: Left panel (Post + Comment) and Right panel (Labels) */}
@@ -198,19 +200,31 @@ export const HomePage: React.FC = () => {
 					{/* Left panel: Post and Comment */}
 					<div style={{ flex: '1', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
 						{/* Post Section */}
-						<label>
-							<span>Post</span>
-							<textarea
-								rows={window.innerWidth < 480 ? 8 : 15}
-								value={post}
-								onChange={(e) => setPost(e.target.value)}
-								placeholder="Write your post here..."
-								style={{
-									minHeight: window.innerWidth < 480 ? '200px' : '400px',
-									resize: 'vertical'
-								}}
-							/>
-						</label>
+						<div>
+							<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+								Social Media Post
+								<span
+									style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 0.7 }}
+									title="This is the social media post content that you will be reviewing and evaluating."
+								>ℹ️</span>
+							</span>
+							<div style={{
+								minHeight: window.innerWidth < 480 ? '200px' : '400px',
+								maxHeight: '600px',
+								overflow: 'auto',
+								padding: '12px',
+								border: '1px solid #2a355f',
+								borderRadius: '8px',
+								background: 'rgba(42, 53, 95, 0.2)',
+								color: 'var(--text)',
+								whiteSpace: 'pre-wrap',
+								wordWrap: 'break-word',
+								lineHeight: '1.6',
+								fontSize: window.innerWidth < 480 ? '14px' : '15px'
+							}}>
+								{post || 'No post content'}
+							</div>
+						</div>
 
 						{/* Labels section for mobile - appears after post */}
 						{window.innerWidth < 768 && selectedLabels.length > 0 && (
@@ -220,7 +234,13 @@ export const HomePage: React.FC = () => {
 								gap: '10px'
 							}}>
 								<div>
-									<span style={{ color: 'var(--muted)', fontSize: window.innerWidth < 480 ? '12px' : '13px', fontWeight: '500' }}>Detected labels:</span>
+									<span style={{ color: 'var(--muted)', fontSize: window.innerWidth < 480 ? '14px' : '15px', fontWeight: '500' }}>
+										AI Detected Labels:
+										<span
+											style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 0.7 }}
+											title="These are labels automatically detected by AI. Review them to see if they accurately categorize the post."
+										>ℹ️</span>
+									</span>
 									<div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
 										{selectedLabels.map((label, index) => (
 											<span key={index} style={{
@@ -228,7 +248,7 @@ export const HomePage: React.FC = () => {
 												color: 'white',
 												padding: '3px 6px',
 												borderRadius: '4px',
-												fontSize: window.innerWidth < 480 ? '10px' : '11px',
+												fontSize: window.innerWidth < 480 ? '12px' : '13px',
 												whiteSpace: 'nowrap'
 											}}>
 												{label.name} {label.percentage}%
@@ -238,112 +258,74 @@ export const HomePage: React.FC = () => {
 								</div>
 
 								<div>
-									<div style={{
-										display: 'flex',
-										flexDirection: 'column',
-										gap: '6px'
-									}}>
-										<span style={{
-											color: 'var(--muted)',
-											fontSize: window.innerWidth < 480 ? '10px' : '11px',
-											fontWeight: '500'
-										}}>Are you satisfied with detected labels?</span>
-										<div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+									<span style={{
+										color: 'var(--muted)',
+										fontSize: window.innerWidth < 480 ? '14px' : '15px',
+										fontWeight: '500',
+										marginBottom: '8px',
+										display: 'block'
+									}}>Did your label differ from AI labels? If yes, please select labels based on your thoughts:</span>
+									<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+										{labels.map((label) => (
 											<button
+												key={label}
 												type="button"
-												onClick={() => setIsSatisfiedWithLabels(true)}
+												onClick={() => handleLabelSelection(label)}
 												style={{
-													padding: window.innerWidth < 480 ? '6px 10px' : '6px 12px',
+													padding: window.innerWidth < 480 ? '3px 6px' : '4px 7px',
 													borderRadius: '4px',
 													border: '2px solid',
-													borderColor: isSatisfiedWithLabels === true ? 'var(--primary)' : '#2a355f',
-													background: isSatisfiedWithLabels === true ? 'var(--primary)' : 'transparent',
-													color: isSatisfiedWithLabels === true ? 'white' : 'var(--text)',
+													borderColor: customLabels.includes(label) ? 'var(--primary)' : '#2a355f',
+													background: customLabels.includes(label) ? 'var(--primary)' : 'transparent',
+													color: customLabels.includes(label) ? 'white' : 'var(--text)',
 													cursor: 'pointer',
-													fontSize: window.innerWidth < 480 ? '11px' : '12px',
-													fontWeight: '500',
-													flex: '1',
-													minWidth: '50px'
+													fontSize: window.innerWidth < 480 ? '12px' : '13px'
 												}}
 											>
-												Yes
+												{label}
 											</button>
-											<button
-												type="button"
-												onClick={() => setIsSatisfiedWithLabels(false)}
-												style={{
-													padding: window.innerWidth < 480 ? '6px 10px' : '6px 12px',
-													borderRadius: '4px',
-													border: '2px solid',
-													borderColor: isSatisfiedWithLabels === false ? 'var(--primary)' : '#2a355f',
-													background: isSatisfiedWithLabels === false ? 'var(--primary)' : 'transparent',
-													color: isSatisfiedWithLabels === false ? 'white' : 'var(--text)',
-													cursor: 'pointer',
-													fontSize: window.innerWidth < 480 ? '11px' : '12px',
-													fontWeight: '500',
-													flex: '1',
-													minWidth: '50px'
-												}}
-											>
-												No
-											</button>
-										</div>
+										))}
 									</div>
+									{customLabels.length > 0 && (
+										<div style={{ marginTop: 6 }}>
+											<span style={{ color: 'var(--muted)', fontSize: window.innerWidth < 480 ? '12px' : '13px' }}>Selected: {customLabels.join(', ')}</span>
+										</div>
+									)}
 								</div>
-
-								{isSatisfiedWithLabels === false && (
-									<div>
-										<span style={{ color: 'var(--muted)', fontSize: window.innerWidth < 480 ? '12px' : '13px', fontWeight: '500' }}>Select labels:</span>
-										<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-											{labels.map((label) => (
-												<button
-													key={label}
-													type="button"
-													onClick={() => handleLabelSelection(label)}
-													style={{
-														padding: window.innerWidth < 480 ? '3px 6px' : '4px 7px',
-														borderRadius: '4px',
-														border: '2px solid',
-														borderColor: customLabels.includes(label) ? 'var(--primary)' : '#2a355f',
-														background: customLabels.includes(label) ? 'var(--primary)' : 'transparent',
-														color: customLabels.includes(label) ? 'white' : 'var(--text)',
-														cursor: 'pointer',
-														fontSize: window.innerWidth < 480 ? '10px' : '11px'
-													}}
-												>
-													{label}
-												</button>
-											))}
-										</div>
-										{customLabels.length > 0 && (
-											<div style={{ marginTop: 6 }}>
-												<span style={{ color: 'var(--muted)', fontSize: window.innerWidth < 480 ? '10px' : '11px' }}>Selected: {customLabels.join(', ')}</span>
-											</div>
-										)}
-									</div>
-								)}
 							</div>
 						)}
 
 						{/* Generate Comment button */}
 						<div>
-							<button onClick={generateComment} style={{ width: '100%', maxWidth: '200px' }}>Generate comment</button>
+							<button onClick={generateResponse} style={{ width: '100%', maxWidth: '200px' }}>Generate Response</button>
 						</div>
 
-						{/* Comment Section */}
-						<label>
-							<span>Comment</span>
-							<textarea
-								rows={window.innerWidth < 480 ? 3 : 4}
-								value={comment}
-								onChange={(e) => setComment(e.target.value)}
-								placeholder="Generated comment will appear here..."
-								style={{
-									minHeight: window.innerWidth < 480 ? '60px' : 'auto',
-									maxHeight: window.innerWidth < 480 ? '100px' : 'auto'
-								}}
-							/>
-						</label>
+						{/* Response Section */}
+						<div>
+							<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+								AI Generated Response
+								<span
+									style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 0.7 }}
+									title="This is the response automatically generated by AI. Review it for appropriateness and quality."
+								>ℹ️</span>
+							</span>
+							<div style={{
+								minHeight: window.innerWidth < 480 ? '80px' : '100px',
+								maxHeight: window.innerWidth < 480 ? '150px' : '200px',
+								overflow: 'auto',
+								padding: '12px',
+								border: '1px solid #2a355f',
+								borderRadius: '8px',
+								background: 'rgba(42, 53, 95, 0.2)',
+								color: 'var(--text)',
+								whiteSpace: 'pre-wrap',
+								wordWrap: 'break-word',
+								lineHeight: '1.6',
+								fontSize: window.innerWidth < 480 ? '14px' : '15px'
+							}}>
+								{response || 'Generated response will appear here...'}
+							</div>
+						</div>
 					</div>
 
 					{/* Right panel: Labels (parallel to post only) - Desktop only */}
@@ -358,7 +340,13 @@ export const HomePage: React.FC = () => {
 							{selectedLabels.length > 0 && (
 								<>
 									<div>
-										<span style={{ color: 'var(--muted)', fontSize: '13px', fontWeight: '500' }}>Detected labels:</span>
+										<span style={{ color: 'var(--muted)', fontSize: '15px', fontWeight: '500' }}>
+											AI Detected Labels:
+											<span
+												style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 0.7 }}
+												title="These are labels automatically detected by AI. Review them to see if they accurately categorize the post."
+											>ℹ️</span>
+										</span>
 										<div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
 											{selectedLabels.map((label, index) => (
 												<span key={index} style={{
@@ -366,7 +354,7 @@ export const HomePage: React.FC = () => {
 													color: 'white',
 													padding: '3px 6px',
 													borderRadius: '4px',
-													fontSize: '11px',
+													fontSize: '13px',
 													whiteSpace: 'nowrap'
 												}}>
 													{label.name} {label.percentage}%
@@ -376,99 +364,55 @@ export const HomePage: React.FC = () => {
 									</div>
 
 									<div>
-										<div style={{
-											display: 'flex',
-											flexDirection: 'column',
-											gap: '6px'
-										}}>
-											<span style={{
-												color: 'var(--muted)',
-												fontSize: '11px',
-												fontWeight: '500'
-											}}>Are you satisfied with detected labels?</span>
-											<div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+										<span style={{
+											color: 'var(--muted)',
+											fontSize: '15px',
+											fontWeight: '500',
+											marginBottom: '8px',
+											display: 'block'
+										}}>Did your label differ from AI labels? If yes, please select labels based on your thoughts:</span>
+										<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+											{labels.map((label) => (
 												<button
+													key={label}
 													type="button"
-													onClick={() => setIsSatisfiedWithLabels(true)}
+													onClick={() => handleLabelSelection(label)}
 													style={{
-														padding: '6px 12px',
+														padding: '4px 7px',
 														borderRadius: '4px',
 														border: '2px solid',
-														borderColor: isSatisfiedWithLabels === true ? 'var(--primary)' : '#2a355f',
-														background: isSatisfiedWithLabels === true ? 'var(--primary)' : 'transparent',
-														color: isSatisfiedWithLabels === true ? 'white' : 'var(--text)',
+														borderColor: customLabels.includes(label) ? 'var(--primary)' : '#2a355f',
+														background: customLabels.includes(label) ? 'var(--primary)' : 'transparent',
+														color: customLabels.includes(label) ? 'white' : 'var(--text)',
 														cursor: 'pointer',
-														fontSize: '12px',
-														fontWeight: '500',
-														flex: '1',
-														minWidth: '50px'
+														fontSize: '13px'
 													}}
 												>
-													Yes
+													{label}
 												</button>
-												<button
-													type="button"
-													onClick={() => setIsSatisfiedWithLabels(false)}
-													style={{
-														padding: '6px 12px',
-														borderRadius: '4px',
-														border: '2px solid',
-														borderColor: isSatisfiedWithLabels === false ? 'var(--primary)' : '#2a355f',
-														background: isSatisfiedWithLabels === false ? 'var(--primary)' : 'transparent',
-														color: isSatisfiedWithLabels === false ? 'white' : 'var(--text)',
-														cursor: 'pointer',
-														fontSize: '12px',
-														fontWeight: '500',
-														flex: '1',
-														minWidth: '50px'
-													}}
-												>
-													No
-												</button>
-											</div>
+											))}
 										</div>
+										{customLabels.length > 0 && (
+											<div style={{ marginTop: 6 }}>
+												<span style={{ color: 'var(--muted)', fontSize: '13px' }}>Selected: {customLabels.join(', ')}</span>
+											</div>
+										)}
 									</div>
-
-									{isSatisfiedWithLabels === false && (
-										<div>
-											<span style={{ color: 'var(--muted)', fontSize: '13px', fontWeight: '500' }}>Select labels:</span>
-											<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-												{labels.map((label) => (
-													<button
-														key={label}
-														type="button"
-														onClick={() => handleLabelSelection(label)}
-														style={{
-															padding: '4px 7px',
-															borderRadius: '4px',
-															border: '2px solid',
-															borderColor: customLabels.includes(label) ? 'var(--primary)' : '#2a355f',
-															background: customLabels.includes(label) ? 'var(--primary)' : 'transparent',
-															color: customLabels.includes(label) ? 'white' : 'var(--text)',
-															cursor: 'pointer',
-															fontSize: '11px'
-														}}
-													>
-														{label}
-													</button>
-												))}
-											</div>
-											{customLabels.length > 0 && (
-												<div style={{ marginTop: 6 }}>
-													<span style={{ color: 'var(--muted)', fontSize: '11px' }}>Selected: {customLabels.join(', ')}</span>
-												</div>
-											)}
-										</div>
-									)}
 								</>
 							)}
 						</div>
 					)}
 				</div>
 
-				{comment && (
+				{response && (
 					<div style={{ marginTop: window.innerWidth < 480 ? 8 : 16 }}>
-						<h3 style={{ margin: '0 0 8px 0', fontSize: window.innerWidth < 480 ? '14px' : '16px', color: 'var(--text)' }}>Generated Comment Evaluation</h3>
+						<h3 style={{ margin: '0 0 8px 0', fontSize: window.innerWidth < 480 ? '16px' : '18px', color: 'var(--text)' }}>
+							Please evaluate the AI-generated response on three categories:
+							<span
+								style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 0.7 }}
+								title="Evaluate the AI-generated response on three dimensions: Empathy (shows understanding), Relevant (addresses the post), and Safe (appropriate and non-harmful)."
+							>ℹ️</span>
+						</h3>
 						<div style={{ display: 'flex', flexDirection: 'column', gap: window.innerWidth < 480 ? 8 : 12 }}>
 							<EvaluationScale label="Empathy" value={empathy} onChange={setEmpathy} />
 							<EvaluationScale label="Relevant" value={relevant} onChange={setRelevant} />
@@ -477,7 +421,30 @@ export const HomePage: React.FC = () => {
 					</div>
 				)}
 
-				{comment && (
+				{/* User Custom Response Section */}
+				{response && (
+					<div style={{ marginTop: window.innerWidth < 480 ? 12 : 16 }}>
+						<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500', fontSize: window.innerWidth < 480 ? '14px' : '15px' }}>
+							If you are not satisfied with the AI generated response, please enter your own response:
+							<span
+								style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 0.7 }}
+								title="If the AI response is inadequate, you can provide your own alternative response here."
+							>ℹ️</span>
+						</span>
+						<textarea
+							rows={window.innerWidth < 480 ? 4 : 5}
+							value={userCustomResponse}
+							onChange={(e) => setUserCustomResponse(e.target.value)}
+							placeholder="Enter your custom response here..."
+							style={{
+								minHeight: window.innerWidth < 480 ? '100px' : '120px',
+								resize: 'vertical'
+							}}
+						/>
+					</div>
+				)}
+
+				{response && (
 					<div style={{ marginTop: 16, textAlign: 'center' }}>
 						{currentPostIndex === demoPosts.length - 1 ? (
 							<button
@@ -489,7 +456,7 @@ export const HomePage: React.FC = () => {
 									background: isFinalSubmitted ? 'var(--primary)' : 'transparent',
 									color: isFinalSubmitted ? 'white' : 'var(--primary)',
 									cursor: 'pointer',
-									fontSize: '14px',
+									fontSize: '16px',
 									fontWeight: '500',
 									transition: 'all 0.3s ease'
 								}}
@@ -506,7 +473,7 @@ export const HomePage: React.FC = () => {
 									background: 'transparent',
 									color: 'var(--primary)',
 									cursor: 'pointer',
-									fontSize: '14px',
+									fontSize: '16px',
 									fontWeight: '500',
 									transition: 'all 0.3s ease',
 									display: 'flex',
