@@ -4,7 +4,8 @@ import { useAuth } from '../auth/AuthProvider'
 
 export const InstructionPage: React.FC = () => {
     const navigate = useNavigate()
-    const { username, markInstructionsAsSeen } = useAuth()
+    //const { username, markInstructionsAsSeen } = useAuth()
+    const { markInstructionsAsSeen } = useAuth()
 
     const handleContinue = () => {
         markInstructionsAsSeen()

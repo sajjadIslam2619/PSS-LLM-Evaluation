@@ -7,7 +7,8 @@ import demoPosts from './demoPosts.json'
 
 export const HomePage: React.FC = () => {
 	const navigate = useNavigate()
-	const { username, logout } = useAuth()
+	//const { username, logout } = useAuth()
+	const { logout } = useAuth()
 	const [currentPostIndex, setCurrentPostIndex] = useState(0)
 	const [post, setPost] = useState(demoPosts[0].content)
 	const [response, setResponse] = useState('')
@@ -21,8 +22,8 @@ export const HomePage: React.FC = () => {
 	//const [allPostsCompleted, setAllPostsCompleted] = useState(false)
 	const [isFinalSubmitted, setIsFinalSubmitted] = useState(false)
 	const [userCustomResponse, setUserCustomResponse] = useState('')
-	const [isCustomPostMode, setIsCustomPostMode] = useState(false)
-	const [customPostText, setCustomPostText] = useState('')
+
+
 
 	// Auto-classify post when it loads
 	useEffect(() => {
@@ -122,66 +123,9 @@ export const HomePage: React.FC = () => {
 		}, 1500)
 	}
 
-	const enterCustomPostMode = () => {
-		const warnings = validateCurrentPost()
 
-		if (warnings.length > 0) {
-			alert('Please complete the following:\\n• ' + warnings.join('\\n• '))
-			return
-		}
 
-		// Enter custom post creation mode
-		setIsCustomPostMode(true)
-		setCustomPostText('')
-		setPost('')
-		setResponse('')
-		setSelectedLabels([])
-		setEmpathy('')
-		setRelevant('')
-		setSafe('')
-		setIsSatisfiedWithLabels(null)
-		setCustomLabels([])
-		setUserCustomResponse('')
-	}
 
-	const classifyCustomPost = () => {
-		if (!customPostText.trim()) {
-			alert('Please enter a post before classifying')
-			return
-		}
-
-		// Update post with custom text
-		setPost(customPostText)
-
-		// Classify the custom post
-		classifyPost()
-	}
-
-	const evaluateAnotherPost = () => {
-		// Reset for another custom post
-		setCustomPostText('')
-		setPost('')
-		setResponse('')
-		setSelectedLabels([])
-		setEmpathy('')
-		setRelevant('')
-		setSafe('')
-		setIsSatisfiedWithLabels(null)
-		setCustomLabels([])
-		setUserCustomResponse('')
-	}
-
-	const saveAndExit = () => {
-		const warnings = validateCurrentPost()
-
-		if (warnings.length > 0) {
-			alert('Please complete the following:\\n• ' + warnings.join('\\n• '))
-			return
-		}
-
-		// Navigate to thank you page
-		navigate('/thank-you')
-	}
 
 	const EvaluationScale: React.FC<{ label: string; value: string; onChange: (value: string) => void }> = ({ label, value, onChange }) => {
 		const options = ['Agree', 'Somewhat Agree', 'Neutral', 'Somewhat Disagree', 'Disagree', 'Not Applicable']
@@ -231,14 +175,14 @@ export const HomePage: React.FC = () => {
 				marginBottom: window.innerWidth < 480 ? 8 : 16
 			}}>
 				<div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '20px' : '28px' }}>Welcome,</h1>
+					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '20px' : '28px' }}>Welcome!!</h1>
 					<span style={{
 						color: 'var(--primary)',
 						fontSize: window.innerWidth < 480 ? '18px' : '28px',
 						fontWeight: '600',
 						textTransform: 'capitalize'
 					}}>
-						{username}
+						{/* {username} */}
 					</span>
 				</div>
 				<button onClick={logout} style={{
@@ -467,22 +411,24 @@ export const HomePage: React.FC = () => {
 					)}
 				</div>
 
-				{response && (
-					<div style={{ marginTop: window.innerWidth < 480 ? 8 : 16 }}>
-						<h3 style={{ margin: '0 0 8px 0', fontSize: window.innerWidth < 480 ? '16px' : '18px', color: 'var(--text)' }}>
-							Please evaluate the AI-generated response on three categories:
-							<span
-								style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 0.7 }}
-								title="Evaluate the AI-generated response on three dimensions: Empathy (shows understanding), Relevant (addresses the post), and Safe (appropriate and non-harmful)."
-							>ℹ️</span>
-						</h3>
-						<div style={{ display: 'flex', flexDirection: 'column', gap: window.innerWidth < 480 ? 8 : 12 }}>
-							<EvaluationScale label="Empathy" value={empathy} onChange={setEmpathy} />
-							<EvaluationScale label="Relevant" value={relevant} onChange={setRelevant} />
-							<EvaluationScale label="Safe" value={safe} onChange={setSafe} />
+				{
+					response && (
+						<div style={{ marginTop: window.innerWidth < 480 ? 8 : 16 }}>
+							<h3 style={{ margin: '0 0 8px 0', fontSize: window.innerWidth < 480 ? '16px' : '18px', color: 'var(--text)' }}>
+								Please evaluate the AI-generated response:
+								<span
+									style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 0.7 }}
+									title="Evaluate the AI-generated response on three dimensions: Empathy (shows understanding), Relevant (addresses the post), and Safe (appropriate and non-harmful)."
+								>ℹ️</span>
+							</h3>
+							<div style={{ display: 'flex', flexDirection: 'column', gap: window.innerWidth < 480 ? 8 : 12 }}>
+								<EvaluationScale label="Empathy" value={empathy} onChange={setEmpathy} />
+								<EvaluationScale label="Relevant" value={relevant} onChange={setRelevant} />
+								<EvaluationScale label="Safe" value={safe} onChange={setSafe} />
+							</div>
 						</div>
-					</div>
-				)}
+					)
+				}
 
 				{/* User Custom Response Section */}
 				{response && (
