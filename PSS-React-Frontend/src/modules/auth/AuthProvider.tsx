@@ -2,18 +2,23 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 
 type AuthContextValue = {
 	username: string | null
+	hasSeenInstructions: boolean
 	login: (username: string) => void
 	logout: () => void
+	markInstructionsAsSeen: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [username, setUsername] = useState<string | null>(null)
+	const [hasSeenInstructions, setHasSeenInstructions] = useState<boolean>(false)
 
 	useEffect(() => {
 		const saved = localStorage.getItem('auth_username')
 		if (saved) setUsername(saved)
+		const seenInstructions = localStorage.getItem('has_seen_instructions')
+		if (seenInstructions === 'true') setHasSeenInstructions(true)
 	}, [])
 
 	const login = useCallback((newUsername: string) => {
@@ -24,9 +29,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	const logout = useCallback(() => {
 		setUsername(null)
 		localStorage.removeItem('auth_username')
+		setHasSeenInstructions(false)
+		localStorage.removeItem('has_seen_instructions')
 	}, [])
 
-	const value = useMemo(() => ({ username, login, logout }), [username, login, logout])
+	const markInstructionsAsSeen = useCallback(() => {
+		setHasSeenInstructions(true)
+		localStorage.setItem('has_seen_instructions', 'true')
+	}, [])
+
+	const value = useMemo(
+		() => ({ username, hasSeenInstructions, login, logout, markInstructionsAsSeen }),
+		[username, hasSeenInstructions, login, logout, markInstructionsAsSeen]
+	)
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

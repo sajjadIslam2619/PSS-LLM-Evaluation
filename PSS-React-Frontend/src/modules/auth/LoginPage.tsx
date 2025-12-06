@@ -1,35 +1,37 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import users from './users.json'
 import passwordData from './password.json'
 import { useAuth } from './AuthProvider'
 
 export const LoginPage: React.FC = () => {
 	const navigate = useNavigate()
-	const { login } = useAuth()
-	const [username, setUsername] = useState('')
+	const { login, hasSeenInstructions } = useAuth()
+	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-
-	useEffect(() => {
-		if (!username && users.length > 0) setUsername(users[0].username)
-	}, [])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setError(null)
 		setLoading(true)
-		
+
 		if (password !== passwordData.commonPassword) {
 			setError('Invalid password')
 			setLoading(false)
 			return
 		}
-		
+
 		await new Promise((r) => setTimeout(r, 200))
-		login(username)
-		navigate('/home')
+		login(email)
+
+		// Redirect to instructions if first-time user, otherwise to home
+		if (hasSeenInstructions) {
+			navigate('/home')
+		} else {
+			navigate('/instructions')
+		}
+
 		setLoading(false)
 	}
 
@@ -41,21 +43,23 @@ export const LoginPage: React.FC = () => {
 			</div>
 			<form onSubmit={handleSubmit} className="card">
 				<label>
-					<span>Select user</span>
-					<select value={username} onChange={(e) => setUsername(e.target.value)}>
-						{users.map((u) => (
-							<option key={u.id} value={u.username}>{u.username}</option>
-						))}
-					</select>
+					<span>Email</span>
+					<input
+						type="email"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						placeholder="Enter your email"
+						required
+					/>
 				</label>
 				<label>
 					<span>Password</span>
-					<input 
-						type="password" 
-						value={password} 
-						onChange={(e) => setPassword(e.target.value)} 
+					<input
+						type="password"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
 						placeholder="Enter common password"
-						required 
+						required
 					/>
 				</label>
 				{error && <div className="error">{error}</div>}

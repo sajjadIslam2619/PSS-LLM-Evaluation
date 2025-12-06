@@ -21,6 +21,8 @@ export const HomePage: React.FC = () => {
 	//const [allPostsCompleted, setAllPostsCompleted] = useState(false)
 	const [isFinalSubmitted, setIsFinalSubmitted] = useState(false)
 	const [userCustomResponse, setUserCustomResponse] = useState('')
+	const [isCustomPostMode, setIsCustomPostMode] = useState(false)
+	const [customPostText, setCustomPostText] = useState('')
 
 	// Auto-classify post when it loads
 	useEffect(() => {
@@ -118,6 +120,67 @@ export const HomePage: React.FC = () => {
 		setTimeout(() => {
 			navigate('/thank-you')
 		}, 1500)
+	}
+
+	const enterCustomPostMode = () => {
+		const warnings = validateCurrentPost()
+
+		if (warnings.length > 0) {
+			alert('Please complete the following:\\n• ' + warnings.join('\\n• '))
+			return
+		}
+
+		// Enter custom post creation mode
+		setIsCustomPostMode(true)
+		setCustomPostText('')
+		setPost('')
+		setResponse('')
+		setSelectedLabels([])
+		setEmpathy('')
+		setRelevant('')
+		setSafe('')
+		setIsSatisfiedWithLabels(null)
+		setCustomLabels([])
+		setUserCustomResponse('')
+	}
+
+	const classifyCustomPost = () => {
+		if (!customPostText.trim()) {
+			alert('Please enter a post before classifying')
+			return
+		}
+
+		// Update post with custom text
+		setPost(customPostText)
+
+		// Classify the custom post
+		classifyPost()
+	}
+
+	const evaluateAnotherPost = () => {
+		// Reset for another custom post
+		setCustomPostText('')
+		setPost('')
+		setResponse('')
+		setSelectedLabels([])
+		setEmpathy('')
+		setRelevant('')
+		setSafe('')
+		setIsSatisfiedWithLabels(null)
+		setCustomLabels([])
+		setUserCustomResponse('')
+	}
+
+	const saveAndExit = () => {
+		const warnings = validateCurrentPost()
+
+		if (warnings.length > 0) {
+			alert('Please complete the following:\\n• ' + warnings.join('\\n• '))
+			return
+		}
+
+		// Navigate to thank you page
+		navigate('/thank-you')
 	}
 
 	const EvaluationScale: React.FC<{ label: string; value: string; onChange: (value: string) => void }> = ({ label, value, onChange }) => {
