@@ -32,6 +32,13 @@ export const InstructionPage: React.FC = () => {
                 </h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '20px' }}>
+                    {/* Part 1 Header */}
+                    <div style={{ marginBottom: isMobile ? '8px' : '12px' }}>
+                        <h3 style={{ fontSize: isMobile ? '18px' : '20px', color: 'var(--primary)', margin: 0 }}>
+                            Part 1: Reviewing Posts
+                        </h3>
+                    </div>
+
                     {/* Step 1 */}
                     <div style={{ display: 'flex', gap: isMobile ? '12px' : '16px' }}>
                         <div style={{
@@ -190,6 +197,99 @@ export const InstructionPage: React.FC = () => {
                             </h3>
                             <p style={{ margin: 0, color: 'var(--muted)', fontSize: isMobile ? '13px' : '15px', lineHeight: '1.6' }}>
                                 Click "Next Post" to move to the next social media post. After reviewing all posts, click "Submit All Reviews" to complete the evaluation.
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr style={{ border: '0', borderTop: '1px solid #e1e4e8', margin: '16px 0' }} />
+
+                    {/* Part 2 Header */}
+                    <div style={{ marginBottom: isMobile ? '8px' : '12px' }}>
+                        <h3 style={{ fontSize: isMobile ? '18px' : '20px', color: 'var(--primary)', margin: 0 }}>
+                            Part 2: Curating Your Own Posts
+                        </h3>
+                        <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: isMobile ? '13px' : '15px' }}>
+                            After reviewing the assigned posts, you can curate your own examples.
+                        </p>
+                    </div>
+
+                    {/* Step 7 */}
+                    <div style={{ display: 'flex', gap: isMobile ? '12px' : '16px' }}>
+                        <div style={{
+                            minWidth: isMobile ? '32px' : '40px',
+                            height: isMobile ? '32px' : '40px',
+                            borderRadius: '50%',
+                            background: 'var(--primary)',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: '700',
+                            fontSize: isMobile ? '16px' : '18px',
+                            flexShrink: 0
+                        }}>
+                            1
+                        </div>
+                        <div>
+                            <h3 style={{ margin: '0 0 6px 0', fontSize: isMobile ? '16px' : '18px', color: 'var(--text)' }}>
+                                Enter Post Content
+                            </h3>
+                            <p style={{ margin: 0, color: 'var(--muted)', fontSize: isMobile ? '13px' : '15px', lineHeight: '1.6' }}>
+                                Click "Curate your own post" on the Home page. Enter your own text for a social media post in the provided text area.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Step 8 */}
+                    <div style={{ display: 'flex', gap: isMobile ? '12px' : '16px' }}>
+                        <div style={{
+                            minWidth: isMobile ? '32px' : '40px',
+                            height: isMobile ? '32px' : '40px',
+                            borderRadius: '50%',
+                            background: 'var(--primary)',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: '700',
+                            fontSize: isMobile ? '16px' : '18px',
+                            flexShrink: 0
+                        }}>
+                            2
+                        </div>
+                        <div>
+                            <h3 style={{ margin: '0 0 6px 0', fontSize: isMobile ? '16px' : '18px', color: 'var(--text)' }}>
+                                Classify and Evaluate
+                            </h3>
+                            <p style={{ margin: 0, color: 'var(--muted)', fontSize: isMobile ? '13px' : '15px', lineHeight: '1.6' }}>
+                                You can use "Classify the Post with AI" to get suggested labels, or select them manually. Then generate a response and evaluate it just like in Part 1.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Step 9 */}
+                    <div style={{ display: 'flex', gap: isMobile ? '12px' : '16px' }}>
+                        <div style={{
+                            minWidth: isMobile ? '32px' : '40px',
+                            height: isMobile ? '32px' : '40px',
+                            borderRadius: '50%',
+                            background: 'var(--primary)',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: '700',
+                            fontSize: isMobile ? '16px' : '18px',
+                            flexShrink: 0
+                        }}>
+                            3
+                        </div>
+                        <div>
+                            <h3 style={{ margin: '0 0 6px 0', fontSize: isMobile ? '16px' : '18px', color: 'var(--text)' }}>
+                                Save or Continue
+                            </h3>
+                            <p style={{ margin: 0, color: 'var(--muted)', fontSize: isMobile ? '13px' : '15px', lineHeight: '1.6' }}>
+                                Click "Curate another post" to save and start a fresh entry, or "Save and Exit" to finish your session.
                             </p>
                         </div>
                     </div>
