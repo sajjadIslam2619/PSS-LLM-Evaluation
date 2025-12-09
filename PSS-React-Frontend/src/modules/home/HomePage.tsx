@@ -16,7 +16,7 @@ export const HomePage: React.FC = () => {
 	const [empathy, setEmpathy] = useState<string>('')
 	const [relevant, setRelevant] = useState<string>('')
 	const [safe, setSafe] = useState<string>('')
-	const [isSatisfiedWithLabels, setIsSatisfiedWithLabels] = useState<boolean | null>(null)
+	// const [isSatisfiedWithLabels, setIsSatisfiedWithLabels] = useState<boolean | null>(null)
 	const [customLabels, setCustomLabels] = useState<string[]>([])
 	//const [isSubmitted, setIsSubmitted] = useState(false)
 	//const [allPostsCompleted, setAllPostsCompleted] = useState(false)
@@ -54,28 +54,28 @@ export const HomePage: React.FC = () => {
 		}
 	}
 
-	const validateCurrentPost = () => {
-		//const warnings = []
+	//const validateCurrentPost = () => {
+	//const warnings = []
 
-		// if (selectedLabels.length === 0 && customLabels.length === 0) {
-		// 	warnings.push('Please classify the post')
-		// }
+	// if (selectedLabels.length === 0 && customLabels.length === 0) {
+	// 	warnings.push('Please classify the post')
+	// }
 
-		// Check if user selected "No" for satisfaction but didn't select custom labels
-		// if (isSatisfiedWithLabels === false && customLabels.length === 0) {
-		// 	warnings.push('Please select labels since you are not satisfied with detected labels')
-		// }
+	// Check if user selected "No" for satisfaction but didn't select custom labels
+	// if (isSatisfiedWithLabels === false && customLabels.length === 0) {
+	// 	warnings.push('Please select labels since you are not satisfied with detected labels')
+	// }
 
-		// if (!response.trim()) {
-		// 	warnings.push('Please generate a response')
-		// }
+	// if (!response.trim()) {
+	// 	warnings.push('Please generate a response')
+	// }
 
-		// if (empathy === '' || relevant === '' || safe === '') {
-		// 	warnings.push('Please evaluate all three categories (Empathy, Relevant, Safe)')
-		// }
+	// if (empathy === '' || relevant === '' || safe === '') {
+	// 	warnings.push('Please evaluate all three categories (Empathy, Relevant, Safe)')
+	// }
 
-		//return warnings
-	}
+	//return warnings
+	//}
 
 	const previousPost = () => {
 		if (currentPostIndex > 0) {
@@ -89,7 +89,7 @@ export const HomePage: React.FC = () => {
 			setEmpathy('')
 			setRelevant('')
 			setSafe('')
-			setIsSatisfiedWithLabels(null)
+			// setIsSatisfiedWithLabels(null)
 			setCustomLabels([])
 		}
 	}
@@ -114,7 +114,7 @@ export const HomePage: React.FC = () => {
 			setEmpathy('')
 			setRelevant('')
 			setSafe('')
-			setIsSatisfiedWithLabels(null)
+			// setIsSatisfiedWithLabels(null)
 			setCustomLabels([])
 			//setIsSubmitted(false)
 		} else {
@@ -124,12 +124,12 @@ export const HomePage: React.FC = () => {
 	}
 
 	const submitAllReviews = () => {
-		const warnings = validateCurrentPost()
+		//const warnings = validateCurrentPost()
 
-		if (warnings.length > 0) {
-			alert('Please complete the following:\n• ' + warnings.join('\n• '))
-			return
-		}
+		// if (warnings.length > 0) {
+		// 	alert('Please complete the following:\n• ' + warnings.join('\n• '))
+		// 	return
+		// }
 
 		// Set submitted state to change button color
 		setIsFinalSubmitted(true)
