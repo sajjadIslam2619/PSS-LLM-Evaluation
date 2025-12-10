@@ -18,7 +18,7 @@ export const CuratePostPage: React.FC = () => {
     const [relevant, setRelevant] = useState<string>('')
     const [safe, setSafe] = useState<string>('')
 
-    const [isSatisfiedWithLabels, setIsSatisfiedWithLabels] = useState<boolean | null>(null)
+    //const [isSatisfiedWithLabels, setIsSatisfiedWithLabels] = useState<boolean | null>(null)
     const [customLabels, setCustomLabels] = useState<string[]>([])
     const [userCustomResponse, setUserCustomResponse] = useState('')
     const [isSaving, setIsSaving] = useState(false)
@@ -55,34 +55,34 @@ export const CuratePostPage: React.FC = () => {
         }
     }
 
-    const validateCurrentPost = () => {
-        const warnings = []
+    // const validateCurrentPost = () => {
+    //     const warnings = []
 
-        if (!post.trim()) {
-            warnings.push('Please enter some content for the post')
-        }
+    //     if (!post.trim()) {
+    //         warnings.push('Please enter some content for the post')
+    //     }
 
-        // if (selectedLabels.length === 0 && customLabels.length === 0) {
-        //     warnings.push('Please classify the post with AI or select custom labels')
-        // }
+    //     if (selectedLabels.length === 0 && customLabels.length === 0) {
+    //          warnings.push('Please classify the post with AI or select custom labels')
+    //     }
 
-        if (isSatisfiedWithLabels === false && customLabels.length === 0) {
-            warnings.push('Please select labels since you are not satisfied with detected labels')
-        }
+    //     if (isSatisfiedWithLabels === false && customLabels.length === 0) {
+    //         warnings.push('Please select labels since you are not satisfied with detected labels')
+    //     }
 
-        if (!response.trim() && !userCustomResponse.trim()) {
-            warnings.push('Please generate an AI response or enter your own')
-        }
+    //     if (!response.trim() && !userCustomResponse.trim()) {
+    //         warnings.push('Please generate an AI response or enter your own')
+    //     }
 
-        return warnings
-    }
+    //     return warnings
+    // }
 
     const handleSaveAndExit = () => {
-        const warnings = validateCurrentPost()
-        if (warnings.length > 0) {
-            alert('Please complete the following:\n• ' + warnings.join('\n• '))
-            return
-        }
+        // const warnings = validateCurrentPost()
+        // if (warnings.length > 0) {
+        //     alert('Please complete the following:\n• ' + warnings.join('\n• '))
+        //     return
+        // }
 
         setIsSaving(true)
         // Simulate API save
@@ -92,11 +92,11 @@ export const CuratePostPage: React.FC = () => {
     }
 
     const handleCurateFunction = () => {
-        const warnings = validateCurrentPost()
-        if (warnings.length > 0) {
-            alert('Please complete the following:\n• ' + warnings.join('\n• '))
-            return
-        }
+        //const warnings = validateCurrentPost()
+        // if (warnings.length > 0) {
+        //     alert('Please complete the following:\n• ' + warnings.join('\n• '))
+        //     return
+        // }
 
         // Save current (mock) and reset
         // Save current (mock) and reset
@@ -109,7 +109,7 @@ export const CuratePostPage: React.FC = () => {
         setEmpathy('')
         setRelevant('')
         setSafe('')
-        setIsSatisfiedWithLabels(null)
+        //setIsSatisfiedWithLabels(null)
         setCustomLabels([])
         // }
     }
