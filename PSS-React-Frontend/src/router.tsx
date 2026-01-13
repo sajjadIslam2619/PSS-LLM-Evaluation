@@ -1,7 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { LoginPage } from './modules/auth/LoginPage'
 import { HomePage } from './modules/home/HomePage'
-import { InstructionPage } from './modules/instructions/InstructionPage'
 import { ThankYouPage } from './modules/thankyou/ThankYouPage'
 import { CuratePostPage } from './modules/curation/CuratePostPage'
 import { ProtectedRoute } from './shared/ProtectedRoute'
@@ -10,14 +9,6 @@ import { ProtectedRoute } from './shared/ProtectedRoute'
 export const router = createBrowserRouter(
   [
     { path: '/', element: <LoginPage /> },
-    {
-      path: '/instructions',
-      element: (
-        <ProtectedRoute>
-          <InstructionPage />
-        </ProtectedRoute>
-      ),
-    },
     {
       path: '/home',
       element: (

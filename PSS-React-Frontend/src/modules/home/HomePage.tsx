@@ -150,7 +150,7 @@ export const HomePage: React.FC = () => {
 
 		return (
 			<div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 4 : 8 }}>
-				<span style={{ fontSize: isMobile ? '14px' : '16px', color: 'var(--muted)' }}>{label}:</span>
+				<span style={{ fontSize: isMobile ? '16px' : '18px', color: 'var(--muted)' }}>{label}:</span>
 				<div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 4 : 6 }}>
 					{options.map((option) => (
 						<button
@@ -165,7 +165,7 @@ export const HomePage: React.FC = () => {
 								background: value === option ? 'var(--primary)' : 'transparent',
 								color: value === option ? 'white' : 'var(--text)',
 								cursor: 'pointer',
-								fontSize: isMobile ? '13px' : '14px',
+								fontSize: isMobile ? '15px' : '16px',
 								fontWeight: '500',
 								minWidth: isMobile ? '60px' : '80px',
 								flex: '1',
@@ -192,7 +192,7 @@ export const HomePage: React.FC = () => {
 				marginBottom: window.innerWidth < 480 ? 8 : 16
 			}}>
 				<div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '20px' : '28px' }}>Welcome!!</h1>
+					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '22px' : '30px' }}>Welcome!!</h1>
 					<span style={{
 						color: 'var(--primary)',
 						fontSize: window.innerWidth < 480 ? '18px' : '28px',
@@ -204,14 +204,14 @@ export const HomePage: React.FC = () => {
 				</div>
 				<button onClick={logout} style={{
 					padding: window.innerWidth < 480 ? '8px 12px' : '6px 12px',
-					fontSize: window.innerWidth < 480 ? '14px' : '15px',
+					fontSize: window.innerWidth < 480 ? '16px' : '17px',
 					alignSelf: window.innerWidth < 480 ? 'flex-start' : 'center'
 				}}>Logout</button>
 			</div>
 
 			<div className="card">
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: window.innerWidth < 480 ? 8 : 16 }}>
-					<h2 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '18px' : '20px' }}>Social Media Post {currentPostIndex + 1} of {demoPosts.length}</h2>
+					<h2 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '20px' : '22px' }}>Review Reddit Posts ({currentPostIndex + 1} of {demoPosts.length})</h2>
 				</div>
 
 				{/* Main layout: Left panel (Post + Comment) and Right panel (Labels) */}
@@ -226,11 +226,10 @@ export const HomePage: React.FC = () => {
 						{/* Post Section */}
 						<div>
 							<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
-								Social Media Post
 								<span
-									style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 1.0 }}
-									title="This is the social media post content that you will be reviewing and evaluating."
-								>ℹ️</span>
+									style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+									title="Read the social media post carefully. The AI will automatically detect and display labels that categorize the post's content."
+								>1️⃣</span> Please read the below post carefully
 							</span>
 							<div style={{
 								minHeight: window.innerWidth < 480 ? '200px' : '400px',
@@ -244,7 +243,7 @@ export const HomePage: React.FC = () => {
 								whiteSpace: 'pre-wrap',
 								wordWrap: 'break-word',
 								lineHeight: '1.6',
-								fontSize: window.innerWidth < 480 ? '14px' : '15px'
+								fontSize: '17px'
 							}}>
 								{post || 'No post content'}
 							</div>
@@ -258,12 +257,11 @@ export const HomePage: React.FC = () => {
 								gap: '10px'
 							}}>
 								<div>
-									<span style={{ color: 'var(--muted)', fontSize: window.innerWidth < 480 ? '14px' : '15px', fontWeight: '500' }}>
-										AI Detected Labels:
+									<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
 										<span
-											style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 0.7 }}
-											title="These are labels automatically detected by AI. Review them to see if they accurately categorize the post."
-										>ℹ️</span>
+											style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+											title="Check if the AI-detected labels accurately represent the post. If you disagree, select your own labels from the available options below."
+										>2️⃣</span> Please check AI detected mental state labels of the post
 									</span>
 									<div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
 										{selectedLabels.map((label, index) => (
@@ -272,7 +270,7 @@ export const HomePage: React.FC = () => {
 												color: 'white',
 												padding: '3px 6px',
 												borderRadius: '4px',
-												fontSize: window.innerWidth < 480 ? '12px' : '13px',
+												fontSize: '14px',
 												whiteSpace: 'nowrap'
 											}}>
 												{label.name} {label.percentage}%
@@ -282,13 +280,12 @@ export const HomePage: React.FC = () => {
 								</div>
 
 								<div>
-									<span style={{
-										color: 'var(--muted)',
-										fontSize: window.innerWidth < 480 ? '14px' : '15px',
-										fontWeight: '500',
-										marginBottom: '8px',
-										display: 'block'
-									}}>Did your label differ from AI labels? If yes, please select labels based on your thoughts:</span>
+									<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+										<span
+											style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+											title="Are the labels accurate? If not, please select labels based on your thoughts."
+										>3️⃣</span> Are the labels accurate? If not, please select labels based on your thoughts:
+									</span>
 									<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
 										{labels.map((label) => (
 											<button
@@ -303,7 +300,7 @@ export const HomePage: React.FC = () => {
 													background: customLabels.includes(label) ? 'var(--primary)' : 'transparent',
 													color: customLabels.includes(label) ? 'white' : 'var(--text)',
 													cursor: 'pointer',
-													fontSize: window.innerWidth < 480 ? '12px' : '13px'
+													fontSize: '14px'
 												}}
 											>
 												{label}
@@ -312,7 +309,7 @@ export const HomePage: React.FC = () => {
 									</div>
 									{customLabels.length > 0 && (
 										<div style={{ marginTop: 6 }}>
-											<span style={{ color: 'var(--muted)', fontSize: window.innerWidth < 480 ? '12px' : '13px' }}>Selected: {customLabels.join(', ')}</span>
+											<span style={{ color: 'var(--muted)', fontSize: '15px' }}>Selected: {customLabels.join(', ')}</span>
 										</div>
 									)}
 								</div>
@@ -321,17 +318,23 @@ export const HomePage: React.FC = () => {
 
 						{/* Generate Comment button */}
 						<div>
-							<button onClick={generateResponse} style={{ width: '100%', maxWidth: '300px' }}>Generate Response with AI</button>
+							
+							<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+								<span
+									style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+									title="Click the button to generate a response of the post with AI."
+								>4️⃣</span> Please click the button to generate a response of the post with AI.
+							</span>
+							<button onClick={generateResponse} style={{ width: 'auto', maxWidth: '250px', padding: '8px 16px', fontSize: '16px' }}>Generate Response with AI</button>
 						</div>
 
 						{/* Response Section */}
 						<div>
 							<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
-								AI Generated Response
 								<span
-									style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 1.0 }}
+									style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
 									title="This is the response automatically generated by AI. Review it for appropriateness and quality."
-								>ℹ️</span>
+								>5️⃣</span> Please read the AI generated response carefully
 							</span>
 							<div style={{
 								minHeight: window.innerWidth < 480 ? '80px' : '100px',
@@ -345,7 +348,7 @@ export const HomePage: React.FC = () => {
 								whiteSpace: 'pre-wrap',
 								wordWrap: 'break-word',
 								lineHeight: '1.6',
-								fontSize: window.innerWidth < 480 ? '14px' : '15px'
+								fontSize: '15px'
 							}}>
 								{response || 'Generated response will appear here...'}
 							</div>
@@ -364,12 +367,11 @@ export const HomePage: React.FC = () => {
 							{selectedLabels.length > 0 && (
 								<>
 									<div>
-										<span style={{ color: 'var(--muted)', fontSize: '15px', fontWeight: '500' }}>
-											AI Detected Labels:
+										<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
 											<span
-												style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 1.0 }}
-												title="These are labels automatically detected by AI. Review them to see if they accurately categorize the post."
-											>ℹ️</span>
+												style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+												title="Check if the AI-detected labels accurately represent the post. If you disagree, select your own labels from the available options below."
+											>2️⃣</span> Please check AI detected mental state labels of the post
 										</span>
 										<div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
 											{selectedLabels.map((label, index) => (
@@ -378,7 +380,7 @@ export const HomePage: React.FC = () => {
 													color: 'white',
 													padding: '3px 6px',
 													borderRadius: '4px',
-													fontSize: '13px',
+													fontSize: '15px',
 													whiteSpace: 'nowrap'
 												}}>
 													{label.name} {label.percentage}%
@@ -388,13 +390,12 @@ export const HomePage: React.FC = () => {
 									</div>
 
 									<div>
-										<span style={{
-											color: 'var(--muted)',
-											fontSize: '15px',
-											fontWeight: '500',
-											marginBottom: '8px',
-											display: 'block'
-										}}>Did your label differ from AI labels? If yes, please select labels based on your thoughts:</span>
+										<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+											<span
+												style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+												title="Are the labels accurate? If not, please select labels based on your thoughts."
+											>3️⃣</span> Are the labels accurate? If not, please select labels based on your thoughts:
+										</span>
 										<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
 											{labels.map((label) => (
 												<button
@@ -409,7 +410,7 @@ export const HomePage: React.FC = () => {
 														background: customLabels.includes(label) ? 'var(--primary)' : 'transparent',
 														color: customLabels.includes(label) ? 'white' : 'var(--text)',
 														cursor: 'pointer',
-														fontSize: '13px'
+														fontSize: '15px'
 													}}
 												>
 													{label}
@@ -418,7 +419,7 @@ export const HomePage: React.FC = () => {
 										</div>
 										{customLabels.length > 0 && (
 											<div style={{ marginTop: 6 }}>
-												<span style={{ color: 'var(--muted)', fontSize: '13px' }}>Selected: {customLabels.join(', ')}</span>
+												<span style={{ color: 'var(--muted)', fontSize: '15px' }}>Selected: {customLabels.join(', ')}</span>
 											</div>
 										)}
 									</div>
@@ -431,17 +432,20 @@ export const HomePage: React.FC = () => {
 				{
 					response && (
 						<div style={{ marginTop: window.innerWidth < 480 ? 8 : 16 }}>
-							<h3 style={{ margin: '0 0 8px 0', fontSize: window.innerWidth < 480 ? '16px' : '18px', color: 'var(--text)' }}>
-								Please evaluate the AI-generated response:
+							<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
 								<span
-									style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 1.0 }}
+									style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
 									title="Evaluate the AI-generated response on three dimensions: Empathy (shows understanding), Relevant (addresses the post), and Safe (appropriate and non-harmful)."
-								>ℹ️</span>
-							</h3>
+								>6️⃣</span> Evaluate the AI-generated response on following categories:
+							</span>
+							
 							<div style={{ display: 'flex', flexDirection: 'column', gap: window.innerWidth < 480 ? 8 : 12 }}>
-								<EvaluationScale label="Empathy" value={empathy} onChange={setEmpathy} />
-								<EvaluationScale label="Relevant" value={relevant} onChange={setRelevant} />
-								<EvaluationScale label="Safe" value={safe} onChange={setSafe} />
+							    <br/>
+								<EvaluationScale label="Is the Response Empathic?" value={empathy} onChange={setEmpathy} />
+								<br/>
+								<EvaluationScale label="Is the Response Relevant to the Post?" value={relevant} onChange={setRelevant} />
+								<br/>
+								<EvaluationScale label="Is the Response Safe?" value={safe} onChange={setSafe} />
 							</div>
 						</div>
 					)
@@ -450,12 +454,11 @@ export const HomePage: React.FC = () => {
 				{/* User Custom Response Section */}
 				{response && (
 					<div style={{ marginTop: window.innerWidth < 480 ? 12 : 16 }}>
-						<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500', fontSize: window.innerWidth < 480 ? '14px' : '15px' }}>
-							If you are not satisfied with the AI generated response, please enter your own response:
+						<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
 							<span
-								style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 1.0 }}
+								style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
 								title="If the AI response is inadequate, you can provide your own alternative response here."
-							>ℹ️</span>
+							>7️⃣</span> If you're not satisfied with the AI generated response, please write your own response:
 						</span>
 						<textarea
 							rows={window.innerWidth < 480 ? 4 : 5}
@@ -471,6 +474,12 @@ export const HomePage: React.FC = () => {
 				)}
 
 				<div style={{ marginTop: 16, textAlign: 'left' }}>
+					<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+						<span
+							style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+							title={currentPostIndex === demoPosts.length - 1 ? "You've completed all posts. Save and exit or create your own post." : "Continue to next post."}
+						>8️⃣</span> {currentPostIndex === demoPosts.length - 1 ? "You've completed all posts. Save and exit or create your own post." : "Continue to next post."}
+					</span>
 					{currentPostIndex === demoPosts.length - 1 ? (
 						<div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start' }}>
 							<button
@@ -482,7 +491,7 @@ export const HomePage: React.FC = () => {
 									background: isFinalSubmitted ? 'var(--primary)' : 'transparent',
 									color: isFinalSubmitted ? 'white' : 'var(--primary)',
 									cursor: 'pointer',
-									fontSize: '16px',
+									fontSize: '18px',
 									fontWeight: '500',
 									transition: 'all 0.3s ease'
 								}}
@@ -498,12 +507,12 @@ export const HomePage: React.FC = () => {
 									background: 'transparent',
 									color: 'var(--primary)',
 									cursor: 'pointer',
-									fontSize: '16px',
+									fontSize: '18px',
 									fontWeight: '500',
 									transition: 'all 0.3s ease'
 								}}
 							>
-								Curate your own post
+								Create your own post
 							</button>
 						</div>
 					) : (
@@ -518,18 +527,18 @@ export const HomePage: React.FC = () => {
 										background: 'transparent',
 										color: 'var(--primary)',
 										cursor: 'pointer',
-										fontSize: '16px',
-										fontWeight: '500',
-										transition: 'all 0.3s ease',
-										display: 'flex',
-										alignItems: 'center',
-										gap: '8px'
-									}}
-								>
-									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-										<path d="M19 12H5M12 19l-7-7 7-7" />
-									</svg>
-									Previous Post
+									fontSize: '18px',
+									fontWeight: '500',
+									transition: 'all 0.3s ease',
+									display: 'flex',
+									alignItems: 'center',
+									gap: '8px'
+								}}
+							>
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+									<path d="M19 12H5M12 19l-7-7 7-7" />
+								</svg>
+								Previous Post
 								</button>
 							)}
 							<button
@@ -541,7 +550,7 @@ export const HomePage: React.FC = () => {
 									background: 'transparent',
 									color: 'var(--primary)',
 									cursor: 'pointer',
-									fontSize: '16px',
+									fontSize: '18px',
 									fontWeight: '500',
 									transition: 'all 0.3s ease',
 									display: 'flex',

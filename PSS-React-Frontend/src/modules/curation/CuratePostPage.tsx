@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 import labels from '../home/labels.json'
@@ -23,19 +23,24 @@ export const CuratePostPage: React.FC = () => {
     const [userCustomResponse, setUserCustomResponse] = useState('')
     const [isSaving, setIsSaving] = useState(false)
 
-    const classifyPost = () => {
-        if (!post.trim()) {
-            alert('Please enter a post content first.')
-            return
-        }
-        // Mock classification: Select 2 random labels
-        const shuffled = [...labels].sort(() => 0.5 - Math.random())
-        const randomLabels = shuffled.slice(0, 2).map(label => ({
-            name: label,
-            percentage: Math.floor(Math.random() * 50) + 20
-        }))
-        setSelectedLabels(randomLabels)
-    }
+    // Auto-classify post when content changes
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!post.trim()) {
+                setSelectedLabels([])
+                return
+            }
+            // Mock classification: Select 2 random labels
+            const shuffled = [...labels].sort(() => 0.5 - Math.random())
+            const randomLabels = shuffled.slice(0, 2).map(label => ({
+                name: label,
+                percentage: Math.floor(Math.random() * 50) + 20
+            }))
+            setSelectedLabels(randomLabels)
+        }, 500) // Debounce for 500ms
+
+        return () => clearTimeout(timer)
+    }, [post])
 
     const generateResponse = () => {
         if (!post.trim()) {
@@ -120,7 +125,7 @@ export const CuratePostPage: React.FC = () => {
 
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 4 : 8 }}>
-                <span style={{ fontSize: isMobile ? '14px' : '16px', color: 'var(--muted)' }}>{label}:</span>
+                <span style={{ fontSize: isMobile ? '16px' : '18px', color: 'var(--muted)' }}>{label}:</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 4 : 6 }}>
                     {options.map((option) => (
                         <button
@@ -135,7 +140,7 @@ export const CuratePostPage: React.FC = () => {
                                 background: value === option ? 'var(--primary)' : 'transparent',
                                 color: value === option ? 'white' : 'var(--text)',
                                 cursor: 'pointer',
-                                fontSize: isMobile ? '13px' : '14px',
+                                fontSize: isMobile ? '15px' : '16px',
                                 fontWeight: '500',
                                 minWidth: isMobile ? '60px' : '80px',
                                 flex: '1',
@@ -161,10 +166,10 @@ export const CuratePostPage: React.FC = () => {
                 gap: window.innerWidth < 480 ? '8px' : '0',
                 marginBottom: window.innerWidth < 480 ? 8 : 16
             }}>
-                <h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '20px' : '28px' }}>Curate Your Own Post</h1>
+                <h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '22px' : '30px' }}>Evaluate Your Own Post</h1>
                 <button onClick={logout} style={{
                     padding: window.innerWidth < 480 ? '8px 12px' : '6px 12px',
-                    fontSize: window.innerWidth < 480 ? '14px' : '15px',
+                    fontSize: window.innerWidth < 480 ? '16px' : '17px',
                     alignSelf: window.innerWidth < 480 ? 'flex-start' : 'center'
                 }}>Logout</button>
             </div>
@@ -184,11 +189,10 @@ export const CuratePostPage: React.FC = () => {
                         {/* Curate Post Section */}
                         <div>
                             <span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
-                                Curate Your Own Post
                                 <span
-                                    style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 1.0 }}
+                                    style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
                                     title="Enter your own social media post content here."
-                                >ℹ️</span>
+                                >1️⃣</span> Please enter your own post
                             </span>
                             <textarea
                                 rows={6}
@@ -204,7 +208,7 @@ export const CuratePostPage: React.FC = () => {
                                     background: 'rgba(42, 53, 95, 0.2)',
                                     color: 'var(--text)',
                                     resize: 'vertical',
-                                    fontSize: '15px',
+                                    fontSize: '17px',
                                     fontFamily: 'inherit'
                                 }}
                             />
@@ -213,19 +217,19 @@ export const CuratePostPage: React.FC = () => {
                         {/* Labels section for mobile */}
                         {window.innerWidth < 768 && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                <button
-                                    onClick={classifyPost}
-                                    style={{ width: '100%', maxWidth: '200px', marginBottom: '8px' }}
-                                >
-                                    Classify the Post with AI
-                                </button>
+                                <span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+                                    <span
+                                        style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+                                        title="AI automatically detects labels for your post. Review them and select additional labels if needed."
+                                    >2️⃣</span> Please check AI detected mental state labels of the post
+                                </span>
 
                                 {selectedLabels.length > 0 && (
                                     <div>
-                                        <span style={{ color: 'var(--muted)', fontSize: '14px', fontWeight: '500' }}>
+                                        <span style={{ color: 'var(--muted)', fontSize: '16px', fontWeight: '500' }}>
                                             AI Detected Labels:
                                             <span
-                                                style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 1.0 }}
+                                                style={{ marginLeft: '6px', cursor: 'help', fontSize: '16px', opacity: 1.0 }}
                                                 title="These are labels automatically detected by AI. Review them to see if they accurately categorize the post."
                                             >ℹ️</span>
                                         </span>
@@ -236,7 +240,7 @@ export const CuratePostPage: React.FC = () => {
                                                     color: 'white',
                                                     padding: '3px 6px',
                                                     borderRadius: '4px',
-                                                    fontSize: '12px',
+                                                    fontSize: '14px',
                                                     whiteSpace: 'nowrap'
                                                 }}>
                                                     {label.name} {label.percentage}%
@@ -247,8 +251,11 @@ export const CuratePostPage: React.FC = () => {
                                 )}
 
                                 <div>
-                                    <span style={{ color: 'var(--muted)', fontSize: '14px', fontWeight: '500', marginBottom: '4px', display: 'block' }}>
-                                        Select labels manualy:
+                                    <span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+                                        <span
+                                            style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+                                            title="Are the labels accurate? If not, please select labels based on your thoughts."
+                                        >3️⃣</span> Are the labels accurate? If not, please select labels based on your thoughts:
                                     </span>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                                         {labels.map((label) => (
@@ -264,7 +271,7 @@ export const CuratePostPage: React.FC = () => {
                                                     background: customLabels.includes(label) ? 'var(--primary)' : 'transparent',
                                                     color: customLabels.includes(label) ? 'white' : 'var(--text)',
                                                     cursor: 'pointer',
-                                                    fontSize: '12px'
+                                                    fontSize: '14px'
                                                 }}
                                             >
                                                 {label}
@@ -277,17 +284,22 @@ export const CuratePostPage: React.FC = () => {
 
                         {/* Generate Comment button */}
                         <div>
-                            <button onClick={generateResponse} style={{ width: '100%', maxWidth: '300px' }}>Generate Response with AI</button>
+                            <span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+                                <span
+                                    style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+                                    title="Click the button to generate a response of the post with AI."
+                                >4️⃣</span> Please click the button to generate a response of the post with AI.
+                            </span>
+                            <button onClick={generateResponse} style={{ width: 'auto', maxWidth: '250px', padding: '8px 16px', fontSize: '16px' }}>Generate Response with AI</button>
                         </div>
 
                         {/* Response Section */}
                         <div>
                             <span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
-                                AI Generated Response
                                 <span
-                                    style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 1.0 }}
+                                    style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
                                     title="This is the response automatically generated by AI. Review it for appropriateness and quality."
-                                >ℹ️</span>
+                                >5️⃣</span> Please read the AI generated response carefully
                             </span>
                             <div style={{
                                 minHeight: '100px',
@@ -315,16 +327,16 @@ export const CuratePostPage: React.FC = () => {
                             flexDirection: 'column',
                             gap: '10px'
                         }}>
-                            <button
-                                onClick={classifyPost}
-                                style={{ width: '100%', marginBottom: '8px' }}
-                            >
-                                Classify the Post with AI
-                            </button>
+                            <span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+                                <span
+                                    style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+                                    title="AI automatically detects labels for your post. Review them and select additional labels if needed."
+                                >2️⃣</span> Please check AI detected mental state labels of the post
+                            </span>
 
                             {selectedLabels.length > 0 && (
                                 <div>
-                                    <span style={{ color: 'var(--muted)', fontSize: '15px', fontWeight: '500' }}>
+                                    <span style={{ color: 'var(--muted)', fontSize: '17px', fontWeight: '500' }}>
                                         AI Detected Labels:
                                         <span
                                             style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 1.0 }}
@@ -338,7 +350,7 @@ export const CuratePostPage: React.FC = () => {
                                                 color: 'white',
                                                 padding: '3px 6px',
                                                 borderRadius: '4px',
-                                                fontSize: '13px',
+                                                fontSize: '15px',
                                                 whiteSpace: 'nowrap'
                                             }}>
                                                 {label.name} {label.percentage}%
@@ -349,13 +361,12 @@ export const CuratePostPage: React.FC = () => {
                             )}
 
                             <div>
-                                <span style={{
-                                    color: 'var(--muted)',
-                                    fontSize: '15px',
-                                    fontWeight: '500',
-                                    marginBottom: '8px',
-                                    display: 'block'
-                                }}>Did your label differ from AI labels? If yes, please select labels based on your thoughts:</span>
+                                <span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+                                    <span
+                                        style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
+                                        title="Are the labels accurate? If not, please select labels based on your thoughts."
+                                    >3️⃣</span> Are the labels accurate? If not, please select labels based on your thoughts:
+                                </span>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
                                     {labels.map((label) => (
                                         <button
@@ -379,7 +390,7 @@ export const CuratePostPage: React.FC = () => {
                                 </div>
                                 {customLabels.length > 0 && (
                                     <div style={{ marginTop: 6 }}>
-                                        <span style={{ color: 'var(--muted)', fontSize: '13px' }}>Selected: {customLabels.join(', ')}</span>
+                                        <span style={{ color: 'var(--muted)', fontSize: '15px' }}>Selected: {customLabels.join(', ')}</span>
                                     </div>
                                 )}
                             </div>
@@ -390,17 +401,19 @@ export const CuratePostPage: React.FC = () => {
                 {/* Evaluation Scales */}
                 {response && (
                     <div style={{ marginTop: 16 }}>
-                        <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: 'var(--text)' }}>
-                            Please evaluate the AI-generated response:
+                        <span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
                             <span
-                                style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 1.0 }}
+                                style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
                                 title="Evaluate the AI-generated response on three dimensions: Empathy (shows understanding), Relevant (addresses the post), and Safe (appropriate and non-harmful)."
-                            >ℹ️</span>
-                        </h3>
+                            >6️⃣</span> Evaluate the AI-generated response on following categories:
+                        </span>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                            <EvaluationScale label="Empathy" value={empathy} onChange={setEmpathy} />
-                            <EvaluationScale label="Relevant" value={relevant} onChange={setRelevant} />
-                            <EvaluationScale label="Safe" value={safe} onChange={setSafe} />
+                            <br/>
+                            <EvaluationScale label="Is the Response Empathic?" value={empathy} onChange={setEmpathy} />
+                            <br/>
+                            <EvaluationScale label="Is the Response Relevant to the Post?" value={relevant} onChange={setRelevant} />
+                            <br/>
+                            <EvaluationScale label="Is the Response Safe?" value={safe} onChange={setSafe} />
                         </div>
                     </div>
                 )}
@@ -409,11 +422,10 @@ export const CuratePostPage: React.FC = () => {
                 {response && (
                     <div style={{ marginTop: 16 }}>
                         <span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
-                            If you are not satisfied with the AI generated response, please enter your own response:
                             <span
-                                style={{ marginLeft: '6px', cursor: 'help', fontSize: '14px', opacity: 1.0 }}
+                                style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
                                 title="If the AI response is inadequate, you can provide your own alternative response here."
-                            >ℹ️</span>
+                            >7️⃣</span> If you're not satisfied with the AI generated response, please write your own response:
                         </span>
                         <textarea
                             rows={5}
@@ -431,40 +443,48 @@ export const CuratePostPage: React.FC = () => {
                 )}
 
                 {/* Footer Buttons */}
-                <div style={{ marginTop: 24, display: 'flex', gap: '16px', justifyContent: 'left' }}>
-                    <button
-                        onClick={handleSaveAndExit}
-                        disabled={isSaving}
-                        style={{
-                            padding: '8px 16px',
-                            borderRadius: '6px',
-                            border: '2px solid var(--primary)',
-                            background: isSaving ? 'var(--primary)' : 'transparent',
-                            color: isSaving ? 'white' : 'var(--primary)',
-                            cursor: isSaving ? 'not-allowed' : 'pointer',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            transition: 'all 0.3s ease'
-                        }}
-                    >
-                        {isSaving ? 'Saving...' : 'Save and Exit'}
-                    </button>
-                    <button
-                        onClick={handleCurateFunction}
-                        style={{
-                            padding: '8px 16px',
-                            borderRadius: '6px',
-                            border: '2px solid var(--primary)',
-                            background: 'transparent',
-                            color: 'var(--primary)',
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            transition: 'all 0.3s ease'
-                        }}
-                    >
-                        Curate another post
-                    </button>
+                <div style={{ marginTop: 24 }}>
+                    <span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
+                        <span
+                            style={{ marginLeft: '6px', cursor: 'help', fontSize: '18px', opacity: 1.0 }}
+                            title="Click 'Curate another post' to save and start a fresh entry, or 'Save and Exit' to finish your session."
+                        >8️⃣</span> Click "Create another post" to save and start a fresh entry, or "Save and Exit" to finish your session.
+                    </span>
+                    <div style={{ display: 'flex', gap: '16px', justifyContent: 'left' }}>
+                        <button
+                            onClick={handleSaveAndExit}
+                            disabled={isSaving}
+                            style={{
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                border: '2px solid var(--primary)',
+                                background: isSaving ? 'var(--primary)' : 'transparent',
+                                color: isSaving ? 'white' : 'var(--primary)',
+                                cursor: isSaving ? 'not-allowed' : 'pointer',
+                                fontSize: '18px',
+                                fontWeight: '500',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            {isSaving ? 'Saving...' : 'Save and Exit'}
+                        </button>
+                        <button
+                            onClick={handleCurateFunction}
+                            style={{
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                border: '2px solid var(--primary)',
+                                background: 'transparent',
+                                color: 'var(--primary)',
+                                cursor: 'pointer',
+                                fontSize: '18px',
+                                fontWeight: '500',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            Create another post
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

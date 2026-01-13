@@ -5,7 +5,7 @@ import { useAuth } from './AuthProvider'
 
 export const LoginPage: React.FC = () => {
 	const navigate = useNavigate()
-	const { login, hasSeenInstructions } = useAuth()
+	const { login } = useAuth()
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [loading, setLoading] = useState(false)
@@ -24,14 +24,7 @@ export const LoginPage: React.FC = () => {
 
 		await new Promise((r) => setTimeout(r, 200))
 		login(email)
-
-		// Redirect to instructions if first-time user, otherwise to home
-		if (hasSeenInstructions) {
-			navigate('/home')
-		} else {
-			navigate('/instructions')
-		}
-
+		navigate('/home')
 		setLoading(false)
 	}
 
