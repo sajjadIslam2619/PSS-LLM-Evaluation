@@ -224,6 +224,14 @@ export const HomePage: React.FC = () => {
 					<h2 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '20px' : '22px' }}>Review Reddit Posts ({posts.length ? currentPostIndex + 1 : 0} of {posts.length})</h2>
 				</div>
 
+				{postsLoading && (
+					<p style={{ color: 'var(--muted)', margin: '16px 0' }}>Loading posts...</p>
+				)}
+				{!postsLoading && postsError && (
+					<p style={{ color: '#e57373', margin: '16px 0' }}>{postsError}</p>
+				)}
+				{!postsLoading && !postsError && (
+				<>
 				{/* Main layout: Left panel (Post + Comment) and Right panel (Labels) */}
 				<div style={{
 					display: 'flex',
@@ -576,6 +584,8 @@ export const HomePage: React.FC = () => {
 						</div>
 					)}
 				</div>
+				</>
+				)}
 			</div>
 		</div>
 	)

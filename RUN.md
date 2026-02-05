@@ -65,12 +65,41 @@ npm run dev
 VITE_API_BASE_URL=http://localhost:8000
 ```
 
+### 3. Build for production
+
+```bash
+cd PSS-React-Frontend
+npm install
+npm run build
+```
+
+- Output: `PSS-React-Frontend/dist/` (static files: HTML, JS, CSS).
+- Deploy the contents of `dist/` to any static host (e.g. GitHub Pages, Netlify, or your server’s web root).
+- To test the build locally: `npm run preview` (serves `dist/` on port 5173).
+
 ### Other commands
 
 | Command | Description |
 |--------|-------------|
-| `npm run build` | Production build |
+| `npm run build` | Production build (TypeScript compile + Vite bundle) |
 | `npm run preview` | Serve production build (port 5173) |
+
+---
+
+## Backend (production run)
+
+No separate “build” step. Install dependencies and run with uvicorn:
+
+```bash
+cd PSS-FastAPI-Backend
+python -m venv venv
+venv\Scripts\activate   # Windows; on macOS/Linux: source venv/bin/activate
+pip install -r requirements.txt
+python -m init_db
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+For production, set `DATABASE_URL`, `SECRET_KEY`, and `HUGGINGFACE_TOKEN` in the environment (not only in `.env`).
 
 ---
 
