@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import passwordData from './password.json'
 import { useAuth } from './AuthProvider'
+import { api } from '../../shared/api'
 
 export const LoginPage: React.FC = () => {
 	const navigate = useNavigate()
 	const { login } = useAuth()
-	const [email, setEmail] = useState('')
+	const [emailOrName, setEmailOrName] = useState('')
 	const [password, setPassword] = useState('')
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
@@ -14,18 +14,18 @@ export const LoginPage: React.FC = () => {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setError(null)
+		const identifier = emailOrName.trim()
+		if (!identifier) return
 		setLoading(true)
-
-		if (password !== passwordData.commonPassword) {
-			setError('Invalid password')
+		try {
+			await api.login({ username: identifier, password })
+			login(identifier)
+			navigate('/home')
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Invalid password')
+		} finally {
 			setLoading(false)
-			return
 		}
-
-		await new Promise((r) => setTimeout(r, 200))
-		login(email)
-		navigate('/home')
-		setLoading(false)
 	}
 
 	return (
@@ -36,13 +36,14 @@ export const LoginPage: React.FC = () => {
 			</div>
 			<form onSubmit={handleSubmit} className="card">
 				<label>
-					<span>Email</span>
+					<span>Email or Name</span>
 					<input
-						type="email"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						placeholder="Enter your email"
+						type="text"
+						value={emailOrName}
+						onChange={(e) => setEmailOrName(e.target.value)}
+						placeholder="Enter your email or name"
 						required
+						autoComplete="username"
 					/>
 				</label>
 				<label>

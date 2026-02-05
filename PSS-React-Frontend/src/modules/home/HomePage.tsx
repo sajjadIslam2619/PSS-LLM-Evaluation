@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
+import { api, type RedditPost } from '../../shared/api'
 import labels from './labels.json'
-import comments from './comments.json'
-import demoPosts from './demoPosts.json'
 
 export const HomePage: React.FC = () => {
 	const navigate = useNavigate()
-	//const { username, logout } = useAuth()
-	const { logout } = useAuth()
+	const { username, logout } = useAuth()
+	const [posts, setPosts] = useState<RedditPost[]>([])
+	const [postsLoading, setPostsLoading] = useState(true)
+	const [postsError, setPostsError] = useState<string | null>(null)
 	const [currentPostIndex, setCurrentPostIndex] = useState(0)
-	const [post, setPost] = useState(demoPosts[0].content)
+	const [post, setPost] = useState('')
 	const [response, setResponse] = useState('')
 	const [selectedLabels, setSelectedLabels] = useState<{ name: string, percentage: number }[]>([])
 	const [empathy, setEmpathy] = useState<string>('')
@@ -22,28 +23,40 @@ export const HomePage: React.FC = () => {
 	//const [allPostsCompleted, setAllPostsCompleted] = useState(false)
 	const [isFinalSubmitted, setIsFinalSubmitted] = useState(false)
 	const [userCustomResponse, setUserCustomResponse] = useState('')
+	const [responseGenerating, setResponseGenerating] = useState(false)
 
 
 
-	// Auto-classify post when it loads
+	// Fetch Reddit posts from backend
 	useEffect(() => {
-		classifyPost()
-	}, [currentPostIndex])
+		api.getRedditPosts()
+			.then((data) => {
+				setPosts(data.posts)
+				if (data.posts.length > 0) setPost(data.posts[0].content)
+			})
+			.catch((err) => setPostsError(err instanceof Error ? err.message : 'Failed to load posts'))
+			.finally(() => setPostsLoading(false))
+	}, [])
 
-	const classifyPost = () => {
-		// Select 2 random labels with random percentages
-		const shuffled = [...labels].sort(() => 0.5 - Math.random())
-		const randomLabels = shuffled.slice(0, 2).map(label => ({
-			name: label,
-			percentage: Math.floor(Math.random() * 50) + 20 // Random percentage between 20-70%
-		}))
-		setSelectedLabels(randomLabels)
-	}
+	// Use mental status labels from redditPosts.json for the current post
+	useEffect(() => {
+		if (posts.length === 0) return
+		const current = posts[currentPostIndex]
+		setSelectedLabels(current?.labels ?? [])
+	}, [posts, currentPostIndex])
 
-	const generateResponse = () => {
-		// Select a random response
-		const randomResponse = comments[Math.floor(Math.random() * comments.length)]
-		setResponse(randomResponse)
+	const generateResponse = async () => {
+		if (!post.trim()) return
+		setResponseGenerating(true)
+		try {
+			const { response: text } = await api.getGeneratedResponse(post.trim())
+			setResponse(text || '')
+		} catch (e) {
+			console.error('Failed to generate response:', e)
+			alert('Failed to generate response. Please try again.')
+		} finally {
+			setResponseGenerating(false)
+		}
 	}
 
 	const handleLabelSelection = (label: string) => {
@@ -77,67 +90,70 @@ export const HomePage: React.FC = () => {
 	//return warnings
 	//}
 
+	const saveCurrentResponse = async () => {
+		if (!username || posts.length === 0) return
+		const p = posts[currentPostIndex]
+		const postId = p?.id ?? currentPostIndex + 1
+		const mentalStatus = [...selectedLabels.map((l) => l.name), ...customLabels].filter(Boolean).join(', ') || undefined
+		await api.createUserResponse({
+			user_identifier: username,
+			post_id: postId,
+			ai_generated_response: response || undefined,
+			empathy: empathy || undefined,
+			relevant: relevant || undefined,
+			safe: safe || undefined,
+			modified_response: userCustomResponse || undefined,
+			mental_status: mentalStatus,
+		})
+	}
+
 	const previousPost = () => {
 		if (currentPostIndex > 0) {
 			const prevIndex = currentPostIndex - 1
 			setCurrentPostIndex(prevIndex)
-			setPost(demoPosts[prevIndex].content)
-			// Reset fields for now (simpler than persisting state)
+			setPost(posts[prevIndex]?.content ?? '')
 			setResponse('')
 			setUserCustomResponse('')
 			setSelectedLabels([])
 			setEmpathy('')
 			setRelevant('')
 			setSafe('')
-			// setIsSatisfiedWithLabels(null)
 			setCustomLabels([])
 		}
 	}
 
-	const nextPost = () => {
-		//const warnings = validateCurrentPost()
-
-		// if (warnings.length > 0) {
-		// 	alert('Please complete the following:\n• ' + warnings.join('\n• '))
-		// 	return
-		// }
-
-		// Move to next post
-		if (currentPostIndex < demoPosts.length - 1) {
+	const nextPost = async () => {
+		if (posts.length === 0) return
+		try {
+			await saveCurrentResponse()
+		} catch (err) {
+			alert(err instanceof Error ? err.message : 'Failed to save response')
+			return
+		}
+		if (currentPostIndex < posts.length - 1) {
 			const nextIndex = currentPostIndex + 1
 			setCurrentPostIndex(nextIndex)
-			setPost(demoPosts[nextIndex].content)
-			// Reset all fields for next post
+			setPost(posts[nextIndex]?.content ?? '')
 			setResponse('')
 			setUserCustomResponse('')
-			setSelectedLabels([])
+			setSelectedLabels(posts[nextIndex]?.labels ?? [])
 			setEmpathy('')
 			setRelevant('')
 			setSafe('')
-			// setIsSatisfiedWithLabels(null)
 			setCustomLabels([])
-			//setIsSubmitted(false)
-		} else {
-			// All posts completed
-			//setAllPostsCompleted(true)
 		}
 	}
 
-	const submitAllReviews = () => {
-		//const warnings = validateCurrentPost()
-
-		// if (warnings.length > 0) {
-		// 	alert('Please complete the following:\n• ' + warnings.join('\n• '))
-		// 	return
-		// }
-
-		// Set submitted state to change button color
+	const submitAllReviews = async () => {
+		if (!username) return
+		try {
+			await saveCurrentResponse()
+		} catch (err) {
+			alert(err instanceof Error ? err.message : 'Failed to save response')
+			return
+		}
 		setIsFinalSubmitted(true)
-
-		// Navigate to thank you page after a short delay
-		setTimeout(() => {
-			navigate('/thank-you')
-		}, 1500)
+		setTimeout(() => navigate('/thank-you'), 1500)
 	}
 
 
@@ -192,15 +208,9 @@ export const HomePage: React.FC = () => {
 				marginBottom: window.innerWidth < 480 ? 8 : 16
 			}}>
 				<div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '22px' : '30px' }}>Welcome!!</h1>
-					<span style={{
-						color: 'var(--primary)',
-						fontSize: window.innerWidth < 480 ? '18px' : '28px',
-						fontWeight: '600',
-						textTransform: 'capitalize'
-					}}>
-						{/* {username} */}
-					</span>
+					<h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '22px' : '30px' }}>
+						Welcome{username ? `, ${username}` : ''}!
+					</h1>
 				</div>
 				<button onClick={logout} style={{
 					padding: window.innerWidth < 480 ? '8px 12px' : '6px 12px',
@@ -211,7 +221,7 @@ export const HomePage: React.FC = () => {
 
 			<div className="card">
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: window.innerWidth < 480 ? 8 : 16 }}>
-					<h2 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '20px' : '22px' }}>Review Reddit Posts ({currentPostIndex + 1} of {demoPosts.length})</h2>
+					<h2 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '20px' : '22px' }}>Review Reddit Posts ({posts.length ? currentPostIndex + 1 : 0} of {posts.length})</h2>
 				</div>
 
 				{/* Main layout: Left panel (Post + Comment) and Right panel (Labels) */}
@@ -287,7 +297,7 @@ export const HomePage: React.FC = () => {
 										>3️⃣</span> Are the labels accurate? If not, please select labels based on your thoughts:
 									</span>
 									<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-										{labels.map((label) => (
+										{labels.map((label: string) => (
 											<button
 												key={label}
 												type="button"
@@ -325,7 +335,7 @@ export const HomePage: React.FC = () => {
 									title="Click the button to generate a response of the post with AI."
 								>4️⃣</span> Please click the button to generate a response of the post with AI.
 							</span>
-							<button onClick={generateResponse} style={{ width: 'auto', maxWidth: '250px', padding: '8px 16px', fontSize: '16px' }}>Generate Response with AI</button>
+							<button onClick={generateResponse} disabled={responseGenerating} style={{ width: 'auto', maxWidth: '250px', padding: '8px 16px', fontSize: '16px' }}>{responseGenerating ? 'Generating…' : 'Generate Response with AI'}</button>
 						</div>
 
 						{/* Response Section */}
@@ -397,7 +407,7 @@ export const HomePage: React.FC = () => {
 											>3️⃣</span> Are the labels accurate? If not, please select labels based on your thoughts:
 										</span>
 										<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-											{labels.map((label) => (
+											{labels.map((label: string) => (
 												<button
 													key={label}
 													type="button"
@@ -477,10 +487,10 @@ export const HomePage: React.FC = () => {
 					<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
 						<span
 							style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
-							title={currentPostIndex === demoPosts.length - 1 ? "You've completed all posts. Save and exit or create your own post." : "Continue to next post."}
-						>8️⃣</span> {currentPostIndex === demoPosts.length - 1 ? "You've completed all posts. Save and exit or create your own post." : "Continue to next post."}
+							title={currentPostIndex === posts.length - 1 ? "You've completed all posts. Save and exit or create your own post." : "Continue to next post."}
+						>8️⃣</span> {currentPostIndex === posts.length - 1 ? "You've completed all posts. Save and exit or create your own post." : "Continue to next post."}
 					</span>
-					{currentPostIndex === demoPosts.length - 1 ? (
+					{currentPostIndex === posts.length - 1 ? (
 						<div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start' }}>
 							<button
 								onClick={submitAllReviews}
@@ -499,7 +509,7 @@ export const HomePage: React.FC = () => {
 								{isFinalSubmitted ? 'Saved...' : 'Save and Exit'}
 							</button>
 							<button
-								onClick={() => navigate('/curate-post')}
+								onClick={() => navigate('/create-post')}
 								style={{
 									padding: '8px 16px',
 									borderRadius: '6px',

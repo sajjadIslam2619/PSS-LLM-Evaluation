@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import { useAuth } from '../auth/AuthProvider'
+import { api } from '../../shared/api'
 
 export const ThankYouPage: React.FC = () => {
-	//const { username, logout } = useAuth()
-	const { logout } = useAuth()
+	const { username, logout } = useAuth()
 	const [isLoggingOut, setIsLoggingOut] = useState(false)
 	const [rating, setRating] = useState<number>(0)
 	const [feedback, setFeedback] = useState('')
 	const [isSubmitted, setIsSubmitted] = useState(false)
+	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [hoveredRating, setHoveredRating] = useState<number>(0)
 
 	const handleLogout = () => {
@@ -17,9 +18,22 @@ export const ThankYouPage: React.FC = () => {
 		}, 1000)
 	}
 
-	const handleSubmitFeedback = () => {
-		console.log('Feedback submitted:', { rating, feedback })
-		setIsSubmitted(true)
+	const handleSubmitFeedback = async () => {
+		if (!username) return
+		setIsSubmitting(true)
+		try {
+			await api.createFeedback({
+				user_identifier: username,
+				rate: rating,
+				comment: feedback.trim() || undefined,
+			})
+			setIsSubmitted(true)
+		} catch (e) {
+			console.error('Failed to submit feedback:', e)
+			alert('Failed to submit feedback. Please try again.')
+		} finally {
+			setIsSubmitting(false)
+		}
 	}
 
 	const renderStars = () => {
@@ -88,21 +102,21 @@ export const ThankYouPage: React.FC = () => {
 
 						<button
 							onClick={handleSubmitFeedback}
-							disabled={rating === 0}
+							disabled={rating === 0 || isSubmitting}
 							style={{
 								padding: '8px 16px',
 								borderRadius: '6px',
 								background: 'transparent', // Always transparent to match Logout initial state
-								color: rating === 0 ? 'var(--muted)' : 'var(--primary)',
-								border: rating === 0 ? '2px solid var(--muted)' : '2px solid var(--primary)',
-								cursor: rating === 0 ? 'not-allowed' : 'pointer',
+								color: rating === 0 || isSubmitting ? 'var(--muted)' : 'var(--primary)',
+								border: rating === 0 || isSubmitting ? '2px solid var(--muted)' : '2px solid var(--primary)',
+								cursor: rating === 0 || isSubmitting ? 'not-allowed' : 'pointer',
 								fontSize: '14px',
 								fontWeight: '500',
 								transition: 'all 0.3s ease',
 								marginTop: '16px' // Added margin for spacing
 							}}
 						>
-							Submit Feedback
+							{isSubmitting ? 'Submitting...' : 'Submit Feedback'}
 						</button>
 					</div>
 				) : (

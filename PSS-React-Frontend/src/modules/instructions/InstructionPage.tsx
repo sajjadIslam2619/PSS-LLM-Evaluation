@@ -206,10 +206,10 @@ export const InstructionPage: React.FC = () => {
                     {/* Part 2 Header */}
                     <div style={{ marginBottom: isMobile ? '8px' : '12px' }}>
                         <h3 style={{ fontSize: isMobile ? '18px' : '20px', color: 'var(--primary)', margin: 0 }}>
-                            Part 2: Curating Your Own Posts
+                            Part 2: Creating Your Own Posts
                         </h3>
                         <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: isMobile ? '13px' : '15px' }}>
-                            After reviewing the assigned posts, you can curate your own examples.
+                            After reviewing the assigned posts, you can create your own examples.
                         </p>
                     </div>
 
@@ -235,7 +235,7 @@ export const InstructionPage: React.FC = () => {
                                 Enter Post Content
                             </h3>
                             <p style={{ margin: 0, color: 'var(--muted)', fontSize: isMobile ? '13px' : '15px', lineHeight: '1.6' }}>
-                                Click "Curate your own post" on the Home page. Enter your own text for a social media post in the provided text area.
+                                Click "Create your own post" on the Home page. Enter your own text for a social media post in the provided text area.
                             </p>
                         </div>
                     </div>
@@ -289,7 +289,7 @@ export const InstructionPage: React.FC = () => {
                                 Save or Continue
                             </h3>
                             <p style={{ margin: 0, color: 'var(--muted)', fontSize: isMobile ? '13px' : '15px', lineHeight: '1.6' }}>
-                                Click "Curate another post" to save and start a fresh entry, or "Save and Exit" to finish your session.
+                                Click "Create another post" to save and start a fresh entry, or "Save and Exit" to finish your session.
                             </p>
                         </div>
                     </div>

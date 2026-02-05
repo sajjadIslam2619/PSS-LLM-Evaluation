@@ -1,0 +1,22 @@
+# PSS FastAPI Backend
+# Development: SQLite. Production: set DATABASE_URL to PostgreSQL.
+
+python-dotenv>=1.0.0
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+sqlalchemy>=2.0.0
+python-jose[cryptography]>=3.3.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# SQLite async (development)
+aiosqlite>=0.19.0
+
+# PostgreSQL (production) – required when DATABASE_URL is postgresql://
+asyncpg>=0.29.0
+psycopg2-binary>=2.9.9
+
+# Hugging Face model (detect-labels) – run locally; model not on Inference Providers
+transformers>=4.40.0
+torch>=2.0.0
+accelerate>=0.30.0
