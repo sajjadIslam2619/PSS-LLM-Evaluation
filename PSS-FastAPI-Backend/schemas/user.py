@@ -6,7 +6,7 @@ from typing import Optional
 class UserResponseCreate(BaseModel):
     """Schema for creating a user response to a Reddit post."""
     user_identifier: str
-    post_id: int
+    article_id: int  # Reddit post id (1-5) from JSON
     ai_generated_response: Optional[str] = None
     empathy: Optional[str] = None
     relevant: Optional[str] = None
@@ -20,7 +20,7 @@ class UserResponseRead(BaseModel):
     id: int
     user_identifier: str
     response_date: datetime
-    post_id: int
+    article_id: int
     ai_generated_response: Optional[str]
     empathy: Optional[str]
     relevant: Optional[str]
@@ -35,6 +35,7 @@ class UserResponseRead(BaseModel):
 class CreateOwnPostResponseCreate(BaseModel):
     """Schema for creating a response to user's own post."""
     user_identifier: str
+    article_id: Optional[int] = None  # If provided, updates existing record; otherwise creates new
     post_content: Optional[str] = None
     ai_generated_response: Optional[str] = None
     empathy: Optional[str] = None
@@ -50,6 +51,7 @@ class CreateOwnPostResponseRead(BaseModel):
     id: int
     user_identifier: str
     response_date: datetime
+    article_id: Optional[int] = None
     post_content: Optional[str]
     ai_generated_response: Optional[str]
     empathy: Optional[str]

@@ -12,7 +12,7 @@ export type RedditPost = {
 
 export type UserResponseCreate = {
 	user_identifier: string
-	post_id: number
+	article_id: number
 	ai_generated_response?: string
 	empathy?: string
 	relevant?: string
@@ -23,6 +23,7 @@ export type UserResponseCreate = {
 
 export type CreateOwnPostResponseCreate = {
 	user_identifier: string
+	article_id?: number
 	post_content?: string
 	ai_generated_response?: string
 	empathy?: string
@@ -73,8 +74,8 @@ export const api = {
 		})
 	},
 
-	async getGeneratedResponse(post_content: string): Promise<{ response: string }> {
-		return await request<{ response: string }>('/posts/generate-response', {
+	async getGeneratedResponse(post_content: string): Promise<{ response: string; error?: string | null }> {
+		return await request<{ response: string; error?: string | null }>('/posts/generate-response', {
 			method: 'POST',
 			body: JSON.stringify({ post_content }),
 		})

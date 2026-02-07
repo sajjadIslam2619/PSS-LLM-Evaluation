@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import random
 import threading
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
@@ -101,16 +100,54 @@ class GenerateResponseRequest(BaseModel):
     post_content: str = ""
 
 
+SYSTEM_PROMPT = """You are a supportive peer support assistant. The user will share a social media post (which may describe difficult feelings or experiences). Write a short, empathetic, and safe response that:
+- Acknowledges their feelings without diagnosing
+- Is supportive and non-judgmental
+- Suggests reaching out to trusted people or professionals if appropriate
+- Stays concise (a few sentences)."""
+
+
+def _call_azure_openai(content: str, settings) -> str:
+    from openai import AzureOpenAI
+    client = AzureOpenAI(
+        api_version=settings.AZURE_OPENAI_API_VERSION,
+        azure_endpoint=settings.AZURE_OPENAI_ENDPOINT.rstrip("/"),
+        api_key=settings.AZURE_OPENAI_API_KEY,
+    )
+    response = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": content},
+        ],
+        max_completion_tokens=512,
+        temperature=0.7,
+        model=settings.AZURE_OPENAI_DEPLOYMENT,
+    )
+    if response.choices and response.choices[0].message.content:
+        return response.choices[0].message.content.strip()
+    return ""
+
+
+# Shown to user when config is missing; detailed message only in server logs.
+CONFIG_ERROR_MSG = "Something went wrong calling the AI API."
+
+
 @router.post("/generate-response", response_model=dict)
 async def generate_response(body: GenerateResponseRequest):
-    """Generate an AI response for the given post content. Dummy implementation; later connect to OpenAI."""
+    """Generate an AI response for the post using Azure OpenAI (GPT-4.1)."""
     content = (body.post_content or "").strip()
     if not content:
-        return {"response": ""}
-    # Dummy response; replace with OpenAI call later
-    dummy_responses = [
-        "I hear you. It takes courage to share this. Remember you're not alone, and it's okay to reach out for support when you need it.",
-        "Thank you for opening up. What you're going through sounds really hard. Have you considered talking to someone you trust, or a professional who can offer ongoing support?",
-        "Your feelings are valid. It's important to be kind to yourself. If things feel overwhelming, please consider reaching out to a helpline or a mental health professional.",
-    ]
-    return {"response": random.choice(dummy_responses)}
+        return {"response": "", "error": None}
+
+    settings = get_settings()
+    if not settings.AZURE_OPENAI_API_KEY or not settings.AZURE_OPENAI_ENDPOINT:
+        logger.warning("generate-response: AZURE_OPENAI_API_KEY or AZURE_OPENAI_ENDPOINT not set")
+        return {"response": "", "error": CONFIG_ERROR_MSG}
+
+    try:
+        text = await asyncio.to_thread(_call_azure_openai, content, settings)
+        return {"response": text or "", "error": None}
+    except Exception as e:
+        logger.exception("generate-response: Azure OpenAI failed: %s", e)
+        err_msg = str(e).strip() or "The AI service failed. Please try again later."
+        return {"response": "", "error": err_msg}

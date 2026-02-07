@@ -37,3 +37,17 @@ app.include_router(posts.router)
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/health/config")
+def health_config():
+    """Check whether Azure OpenAI env vars are set (values are not revealed)."""
+    s = get_settings()
+    return {
+        "AZURE_OPENAI_ENDPOINT_set": bool(s.AZURE_OPENAI_ENDPOINT and s.AZURE_OPENAI_ENDPOINT.strip()),
+        "AZURE_OPENAI_API_KEY_set": bool(s.AZURE_OPENAI_API_KEY and s.AZURE_OPENAI_API_KEY.strip()),
+        "azure_ready": bool(
+            s.AZURE_OPENAI_ENDPOINT and s.AZURE_OPENAI_ENDPOINT.strip()
+            and s.AZURE_OPENAI_API_KEY and s.AZURE_OPENAI_API_KEY.strip()
+        ),
+    }

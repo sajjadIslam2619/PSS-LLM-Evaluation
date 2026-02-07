@@ -28,9 +28,13 @@ python -m init_db
 ```
 
 This creates `pss.db` (SQLite) with tables:
-- `user_response` - responses to Reddit posts
-- `create_own_post_response` - responses to user-created posts
+- `user_response` - responses to Reddit posts (includes `article_id` = Reddit post id)
+- `create_own_post_response` - responses to user-created posts (`article_id` = max+1)
 - `user_feedback` - user feedback/ratings
+
+**If you already have a database**, add the new columns:  
+`sqlite3 pss.db "ALTER TABLE user_response ADD COLUMN article_id INTEGER;"`  
+`sqlite3 pss.db "ALTER TABLE create_own_post_response ADD COLUMN article_id INTEGER;"`
 
 ### 3. Run the server
 

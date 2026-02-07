@@ -24,8 +24,19 @@ export const HomePage: React.FC = () => {
 	const [isFinalSubmitted, setIsFinalSubmitted] = useState(false)
 	const [userCustomResponse, setUserCustomResponse] = useState('')
 	const [responseGenerating, setResponseGenerating] = useState(false)
+	const [responseError, setResponseError] = useState<string | null>(null)
 
-
+	// Per-post cache so we can save all posts on Submit and restore when navigating back
+	type PostFormData = {
+		response: string
+		userCustomResponse: string
+		selectedLabels: { name: string; percentage: number }[]
+		customLabels: string[]
+		empathy: string
+		relevant: string
+		safe: string
+	}
+	const [responsesByPostIndex, setResponsesByPostIndex] = useState<Record<number, PostFormData>>({})
 
 	// Fetch Reddit posts from backend
 	useEffect(() => {
@@ -38,22 +49,30 @@ export const HomePage: React.FC = () => {
 			.finally(() => setPostsLoading(false))
 	}, [])
 
-	// Use mental status labels from redditPosts.json for the current post
+	// Use mental status labels from redditPosts.json for the current post (only when not loading from cache)
 	useEffect(() => {
 		if (posts.length === 0) return
+		if (responsesByPostIndex[currentPostIndex] != null) return // keep cache-loaded labels
 		const current = posts[currentPostIndex]
 		setSelectedLabels(current?.labels ?? [])
-	}, [posts, currentPostIndex])
+	}, [posts, currentPostIndex, responsesByPostIndex])
 
 	const generateResponse = async () => {
 		if (!post.trim()) return
 		setResponseGenerating(true)
+		setResponseError(null)
 		try {
-			const { response: text } = await api.getGeneratedResponse(post.trim())
-			setResponse(text || '')
+			const data = await api.getGeneratedResponse(post.trim())
+			if (data.error) {
+				setResponseError(data.error)
+				setResponse('')
+			} else {
+				setResponse(data.response || '')
+				setResponseError(null)
+			}
 		} catch (e) {
 			console.error('Failed to generate response:', e)
-			alert('Failed to generate response. Please try again.')
+			setResponseError('Something went wrong calling the AI API.')
 		} finally {
 			setResponseGenerating(false)
 		}
@@ -90,66 +109,118 @@ export const HomePage: React.FC = () => {
 	//return warnings
 	//}
 
-	const saveCurrentResponse = async () => {
-		if (!username || posts.length === 0) return
-		const p = posts[currentPostIndex]
-		const postId = p?.id ?? currentPostIndex + 1
-		const mentalStatus = [...selectedLabels.map((l) => l.name), ...customLabels].filter(Boolean).join(', ') || undefined
+	const getCurrentFormData = (): PostFormData => ({
+		response,
+		userCustomResponse,
+		selectedLabels,
+		customLabels,
+		empathy,
+		relevant,
+		safe,
+	})
+
+	const saveOneResponse = async (index: number, data: PostFormData) => {
+		if (!username || !posts[index]) return
+		const p = posts[index]
+		const postId = p?.id ?? index + 1
+		const mentalStatus = [...data.selectedLabels.map((l) => l.name), ...data.customLabels].filter(Boolean).join(', ') || undefined
 		await api.createUserResponse({
 			user_identifier: username,
-			post_id: postId,
-			ai_generated_response: response || undefined,
-			empathy: empathy || undefined,
-			relevant: relevant || undefined,
-			safe: safe || undefined,
-			modified_response: userCustomResponse || undefined,
+			article_id: postId,
+			ai_generated_response: data.response || undefined,
+			empathy: data.empathy || undefined,
+			relevant: data.relevant || undefined,
+			safe: data.safe || undefined,
+			modified_response: data.userCustomResponse || undefined,
 			mental_status: mentalStatus,
 		})
 	}
 
 	const previousPost = () => {
-		if (currentPostIndex > 0) {
-			const prevIndex = currentPostIndex - 1
-			setCurrentPostIndex(prevIndex)
-			setPost(posts[prevIndex]?.content ?? '')
+		if (currentPostIndex <= 0) return
+		// Store current form in cache
+		setResponsesByPostIndex((prev) => ({
+			...prev,
+			[currentPostIndex]: getCurrentFormData(),
+		}))
+		const prevIndex = currentPostIndex - 1
+		setCurrentPostIndex(prevIndex)
+		setPost(posts[prevIndex]?.content ?? '')
+		const cached = responsesByPostIndex[prevIndex]
+		if (cached) {
+			setResponse(cached.response)
+			setUserCustomResponse(cached.userCustomResponse)
+			setSelectedLabels(cached.selectedLabels)
+			setCustomLabels(cached.customLabels)
+			setEmpathy(cached.empathy)
+			setRelevant(cached.relevant)
+			setSafe(cached.safe)
+		} else {
 			setResponse('')
 			setUserCustomResponse('')
-			setSelectedLabels([])
+			setSelectedLabels(posts[prevIndex]?.labels ?? [])
+			setCustomLabels([])
 			setEmpathy('')
 			setRelevant('')
 			setSafe('')
-			setCustomLabels([])
 		}
 	}
 
 	const nextPost = async () => {
 		if (posts.length === 0) return
+		// Save current post to backend before switching
+		const currentData = getCurrentFormData()
 		try {
-			await saveCurrentResponse()
+			await saveOneResponse(currentPostIndex, currentData)
 		} catch (err) {
 			alert(err instanceof Error ? err.message : 'Failed to save response')
 			return
 		}
+		// Store current form in cache
+		setResponsesByPostIndex((prev) => ({
+			...prev,
+			[currentPostIndex]: currentData,
+		}))
 		if (currentPostIndex < posts.length - 1) {
 			const nextIndex = currentPostIndex + 1
 			setCurrentPostIndex(nextIndex)
 			setPost(posts[nextIndex]?.content ?? '')
-			setResponse('')
-			setUserCustomResponse('')
-			setSelectedLabels(posts[nextIndex]?.labels ?? [])
-			setEmpathy('')
-			setRelevant('')
-			setSafe('')
-			setCustomLabels([])
+			const cached = responsesByPostIndex[nextIndex]
+			if (cached) {
+				setResponse(cached.response)
+				setUserCustomResponse(cached.userCustomResponse)
+				setSelectedLabels(cached.selectedLabels)
+				setCustomLabels(cached.customLabels)
+				setEmpathy(cached.empathy)
+				setRelevant(cached.relevant)
+				setSafe(cached.safe)
+			} else {
+				setResponse('')
+				setUserCustomResponse('')
+				setSelectedLabels(posts[nextIndex]?.labels ?? [])
+				setCustomLabels([])
+				setEmpathy('')
+				setRelevant('')
+				setSafe('')
+			}
 		}
 	}
 
 	const submitAllReviews = async () => {
-		if (!username) return
+		if (!username || posts.length === 0) return
+		// Merge current form into cache so we have all posts' data
+		const fullCache: Record<number, PostFormData> = {
+			...responsesByPostIndex,
+			[currentPostIndex]: getCurrentFormData(),
+		}
 		try {
-			await saveCurrentResponse()
+			// Save every post to the backend
+			for (let i = 0; i < posts.length; i++) {
+				const data = fullCache[i]
+				if (data) await saveOneResponse(i, data)
+			}
 		} catch (err) {
-			alert(err instanceof Error ? err.message : 'Failed to save response')
+			alert(err instanceof Error ? err.message : 'Failed to save responses')
 			return
 		}
 		setIsFinalSubmitted(true)
@@ -336,7 +407,6 @@ export const HomePage: React.FC = () => {
 
 						{/* Generate Comment button */}
 						<div>
-							
 							<span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
 								<span
 									style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }}
@@ -344,6 +414,12 @@ export const HomePage: React.FC = () => {
 								>4️⃣</span> Please click the button to generate a response of the post with AI.
 							</span>
 							<button onClick={generateResponse} disabled={responseGenerating} style={{ width: 'auto', maxWidth: '250px', padding: '8px 16px', fontSize: '16px' }}>{responseGenerating ? 'Generating…' : 'Generate Response with AI'}</button>
+							{responseGenerating && (
+								<p style={{ marginTop: '8px', color: 'var(--primary)', fontSize: '15px' }}>Generating response, please wait…</p>
+							)}
+							{responseError && (
+								<p style={{ marginTop: '8px', color: '#e74c3c', fontSize: '15px' }}>{responseError}</p>
+							)}
 						</div>
 
 						{/* Response Section */}

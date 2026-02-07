@@ -5,6 +5,12 @@ Application configuration. Uses environment variables.
 """
 import os
 from functools import lru_cache
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load .env from backend root so endpoint/key are available (env vars take precedence).
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 
 class Settings:
@@ -46,6 +52,12 @@ class Settings:
 
     # Hugging Face: token for model download (detect-labels). Read from env first, then from .env file.
     HUGGINGFACE_TOKEN: str = os.getenv("HUGGINGFACE_TOKEN", "")
+
+    # Azure OpenAI (generate-response). Read from env first, then from .env file (same as HUGGINGFACE_TOKEN).
+    AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT", "")
+    AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY", "")
+    AZURE_OPENAI_DEPLOYMENT: str = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4.1")
+    AZURE_OPENAI_API_VERSION: str = os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
 
 
 @lru_cache

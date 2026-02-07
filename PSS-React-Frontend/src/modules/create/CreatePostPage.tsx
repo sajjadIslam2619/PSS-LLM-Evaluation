@@ -21,6 +21,7 @@ export const CreatePostPage: React.FC = () => {
     const [userCustomResponse, setUserCustomResponse] = useState('')
     const [isSaving, setIsSaving] = useState(false)
     const [responseGenerating, setResponseGenerating] = useState(false)
+    const [responseError, setResponseError] = useState<string | null>(null)
 
     const MIN_WORDS_FOR_LABELS = 30
     const wordCount = post.trim().split(/\s+/).filter(Boolean).length
@@ -68,12 +69,19 @@ export const CreatePostPage: React.FC = () => {
             return
         }
         setResponseGenerating(true)
+        setResponseError(null)
         try {
-            const { response: text } = await api.getGeneratedResponse(post.trim())
-            setResponse(text || '')
+            const data = await api.getGeneratedResponse(post.trim())
+            if (data.error) {
+                setResponseError(data.error)
+                setResponse('')
+            } else {
+                setResponse(data.response || '')
+                setResponseError(null)
+            }
         } catch (e) {
             console.error('Failed to generate response:', e)
-            alert('Failed to generate response. Please try again.')
+            setResponseError('Something went wrong calling the AI API.')
         } finally {
             setResponseGenerating(false)
         }
@@ -316,6 +324,12 @@ export const CreatePostPage: React.FC = () => {
                                 <span style={{ marginLeft: '6px', cursor: 'help', fontSize: '20px', opacity: 1.0 }} title="Click the button to generate a response of the post with AI.">4️⃣</span> Please click the button to generate a response of the post with AI.
                             </span>
                             <button onClick={generateResponse} disabled={responseGenerating} style={{ width: 'auto', maxWidth: '250px', padding: '8px 16px', fontSize: '16px' }}>{responseGenerating ? 'Generating…' : 'Generate Response with AI'}</button>
+                            {responseGenerating && (
+                                <p style={{ marginTop: '8px', color: 'var(--primary)', fontSize: '15px' }}>Generating response, please wait…</p>
+                            )}
+                            {responseError && (
+                                <p style={{ marginTop: '8px', color: '#e74c3c', fontSize: '15px' }}>{responseError}</p>
+                            )}
                         </div>
 
                         <div>
