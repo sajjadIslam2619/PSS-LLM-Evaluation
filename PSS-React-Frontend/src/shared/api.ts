@@ -8,6 +8,8 @@ export type RedditPost = {
 	content: string
 	category: string
 	labels?: { name: string; percentage: number }[]
+	/** Curated fallback when AI generation fails; from redditPosts.json */
+	'default-response'?: string
 }
 
 export type UserResponseCreate = {
@@ -74,10 +76,15 @@ export const api = {
 		})
 	},
 
-	async getGeneratedResponse(post_content: string): Promise<{ response: string; error?: string | null }> {
+	async getGeneratedResponse(
+		post_content: string,
+		post_id?: number,
+	): Promise<{ response: string; error?: string | null }> {
 		return await request<{ response: string; error?: string | null }>('/posts/generate-response', {
 			method: 'POST',
-			body: JSON.stringify({ post_content }),
+			body: JSON.stringify(
+				post_id != null ? { post_content, post_id } : { post_content },
+			),
 		})
 	},
 

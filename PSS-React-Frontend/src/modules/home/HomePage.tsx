@@ -62,7 +62,8 @@ export const HomePage: React.FC = () => {
 		setResponseGenerating(true)
 		setResponseError(null)
 		try {
-			const data = await api.getGeneratedResponse(post.trim())
+			const pid = posts[currentPostIndex]?.id
+			const data = await api.getGeneratedResponse(post.trim(), pid)
 			if (data.error) {
 				setResponseError(data.error)
 				setResponse('')
@@ -72,7 +73,13 @@ export const HomePage: React.FC = () => {
 			}
 		} catch (e) {
 			console.error('Failed to generate response:', e)
-			setResponseError('Something went wrong calling the AI API.')
+			const fallback = posts[currentPostIndex]?.['default-response']?.trim()
+			if (fallback) {
+				setResponse(fallback)
+				setResponseError(null)
+			} else {
+				setResponseError('Something went wrong calling the AI API.')
+			}
 		} finally {
 			setResponseGenerating(false)
 		}

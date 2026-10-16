@@ -96,8 +96,35 @@ async def detect_labels(body: DetectLabelsRequest):
         return {"labels": [], "error": DETECT_LABELS_ERROR_MSG}
 
 
+def _default_response_for_post(post_content: str, post_id: int | None) -> str | None:
+    """Return curated fallback text from redditPosts.json when AI generation fails."""
+    try:
+        with open(POSTS_FILE, "r", encoding="utf-8") as f:
+            posts = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(posts, list):
+        return None
+    content_norm = (post_content or "").strip()
+    if post_id is not None:
+        for p in posts:
+            if isinstance(p, dict) and p.get("id") == post_id:
+                dr = p.get("default-response")
+                if isinstance(dr, str) and dr.strip():
+                    return dr.strip()
+    for p in posts:
+        if not isinstance(p, dict):
+            continue
+        if (p.get("content") or "").strip() == content_norm:
+            dr = p.get("default-response")
+            if isinstance(dr, str) and dr.strip():
+                return dr.strip()
+    return None
+
+
 class GenerateResponseRequest(BaseModel):
     post_content: str = ""
+    post_id: int | None = None
 
 
 SYSTEM_PROMPT = """You are a supportive peer support assistant. The user will share a social media post (which may describe difficult feelings or experiences). Write a short, empathetic, and safe response that:
@@ -139,15 +166,32 @@ async def generate_response(body: GenerateResponseRequest):
     if not content:
         return {"response": "", "error": None}
 
+    def _try_default_response() -> dict | None:
+        fallback = _default_response_for_post(content, body.post_id)
+        if fallback:
+            return {"response": fallback, "error": None}
+        return None
+
     settings = get_settings()
     if not settings.AZURE_OPENAI_API_KEY or not settings.AZURE_OPENAI_ENDPOINT:
         logger.warning("generate-response: AZURE_OPENAI_API_KEY or AZURE_OPENAI_ENDPOINT not set")
+        out = _try_default_response()
+        if out is not None:
+            return out
         return {"response": "", "error": CONFIG_ERROR_MSG}
 
     try:
         text = await asyncio.to_thread(_call_azure_openai, content, settings)
-        return {"response": text or "", "error": None}
+        if not (text or "").strip():
+            out = _try_default_response()
+            if out is not None:
+                return out
+            return {"response": "", "error": None}
+        return {"response": text.strip(), "error": None}
     except Exception as e:
         logger.exception("generate-response: Azure OpenAI failed: %s", e)
+        out = _try_default_response()
+        if out is not None:
+            return out
         err_msg = str(e).strip() or "The AI service failed. Please try again later."
         return {"response": "", "error": err_msg}
