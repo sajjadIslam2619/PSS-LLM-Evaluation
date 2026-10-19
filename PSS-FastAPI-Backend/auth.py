@@ -1,3 +1,4 @@
+import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -6,9 +7,6 @@ from jose import JWTError, jwt
 from config import get_settings
 
 settings = get_settings()
-
-# Common password for all users (no user table)
-COMMON_PASSWORD = "demo123"
 
 
 def create_access_token(subject: str) -> str:
@@ -28,5 +26,8 @@ def decode_access_token(token: str) -> Optional[str]:
 
 
 def verify_password(password: str) -> bool:
-    """Verify password matches common password."""
-    return password == COMMON_PASSWORD
+    """Verify password matches the shared password from the environment."""
+    expected = settings.COMMON_PASSWORD
+    if not expected or not password:
+        return False
+    return secrets.compare_digest(password, expected)

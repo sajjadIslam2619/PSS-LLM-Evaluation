@@ -6,7 +6,7 @@ import labels from '../home/labels.json'
 
 export const CreatePostPage: React.FC = () => {
     const navigate = useNavigate()
-    const { username, logout } = useAuth()
+    const { username, role, logout } = useAuth()
 
     const [post, setPost] = useState('')
     const [response, setResponse] = useState('')
@@ -96,11 +96,12 @@ export const CreatePostPage: React.FC = () => {
     }
 
     const saveCurrentToBackend = async (): Promise<boolean> => {
-        if (!username) return false
+        if (!username || !role) return false
         if (!post.trim()) return true
         try {
             await api.createOwnPostResponse({
                 user_identifier: username,
+                role,
                 post_content: post.trim(),
                 ai_generated_response: response.trim() || undefined,
                 empathy: empathy || undefined,
@@ -230,7 +231,7 @@ export const CreatePostPage: React.FC = () => {
                     marginBottom: window.innerWidth < 480 ? 8 : 16,
                 }}
             >
-                <h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '22px' : '30px' }}>Evaluate Your Own Post</h1>
+                <h1 style={{ margin: 0, fontSize: window.innerWidth < 480 ? '22px' : '30px' }}>Evaluate Your Own Post (Optional)</h1>
                 <button
                     onClick={logout}
                     style={{

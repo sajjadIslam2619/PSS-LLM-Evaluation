@@ -6,7 +6,7 @@ import labels from './labels.json'
 
 export const HomePage: React.FC = () => {
 	const navigate = useNavigate()
-	const { username, logout } = useAuth()
+	const { username, role, logout } = useAuth()
 	const [posts, setPosts] = useState<RedditPost[]>([])
 	const [postsLoading, setPostsLoading] = useState(true)
 	const [postsError, setPostsError] = useState<string | null>(null)
@@ -127,12 +127,13 @@ export const HomePage: React.FC = () => {
 	})
 
 	const saveOneResponse = async (index: number, data: PostFormData) => {
-		if (!username || !posts[index]) return
+		if (!username || !role || !posts[index]) return
 		const p = posts[index]
 		const postId = p?.id ?? index + 1
 		const mentalStatus = [...data.selectedLabels.map((l) => l.name), ...data.customLabels].filter(Boolean).join(', ') || undefined
 		await api.createUserResponse({
 			user_identifier: username,
+			role,
 			article_id: postId,
 			ai_generated_response: data.response || undefined,
 			empathy: data.empathy || undefined,

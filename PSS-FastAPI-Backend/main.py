@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -9,14 +10,24 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import get_settings
-from routers import auth, responses, create_own_post, feedback, posts
+from init_db import ensure_feedback_likert_columns, ensure_role_column
+from routers import auth, responses, create_own_post, feedback, posts, export
 
 settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    ensure_feedback_likert_columns()
+    ensure_role_column()
+    yield
+
 
 app = FastAPI(
     title="PSS LLM Evaluation API",
     description="Backend for Peer Support System LLM Evaluation",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -32,6 +43,7 @@ app.include_router(responses.router)
 app.include_router(create_own_post.router)
 app.include_router(feedback.router)
 app.include_router(posts.router)
+app.include_router(export.router)
 
 
 @app.get("/health")

@@ -14,6 +14,7 @@ export type RedditPost = {
 
 export type UserResponseCreate = {
 	user_identifier: string
+	role: string
 	article_id: number
 	ai_generated_response?: string
 	empathy?: string
@@ -25,6 +26,7 @@ export type UserResponseCreate = {
 
 export type CreateOwnPostResponseCreate = {
 	user_identifier: string
+	role: string
 	article_id?: number
 	post_content?: string
 	ai_generated_response?: string
@@ -38,7 +40,9 @@ export type CreateOwnPostResponseCreate = {
 
 export type FeedbackCreate = {
 	user_identifier: string
-	rate: number
+	role: string
+	simple_to_use: number
+	overall_satisfaction: number
 	comment?: string
 }
 

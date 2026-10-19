@@ -13,8 +13,10 @@ async def create_feedback(
     data: UserFeedbackCreate,
     session: AsyncSession = Depends(get_db),
 ):
-    """Save user feedback (rating and comment)."""
-    feedback = UserFeedback(**data.model_dump())
+    """Save the two Likert answers and an optional comment."""
+    payload = data.model_dump()
+    payload["rate"] = payload["overall_satisfaction"]
+    feedback = UserFeedback(**payload)
     session.add(feedback)
     await session.commit()
     await session.refresh(feedback)

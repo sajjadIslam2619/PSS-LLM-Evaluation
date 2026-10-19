@@ -18,7 +18,7 @@ export const InstructionPage: React.FC = () => {
         <div className="container">
             <div style={{ textAlign: 'center', marginBottom: isMobile ? 16 : 24 }}>
                 <h1 style={{ fontSize: isMobile ? '24px' : '32px', margin: '0 0 8px 0', color: 'var(--primary)' }}>
-                    Welcome to Peer Support System
+                    Welcome to Peer Support Evaluation System
                 </h1>
                 <p style={{ color: 'var(--muted)', fontSize: isMobile ? '14px' : '16px', margin: 0 }}>
                     {/*Hello, <span style={{ color: 'var(--primary)', fontWeight: '600' }}>{username}</span>! Here's how to use this application.*/}

@@ -1,11 +1,20 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
+
+UserRole = Literal[
+    "Peer Support Specialist",
+    "Peer Mentee",
+    "Research Team Members",
+    "Admin",
+    "Others",
+]
 
 
 class UserResponseCreate(BaseModel):
     """Schema for creating a user response to a Reddit post."""
     user_identifier: str
+    role: UserRole
     article_id: int  # Reddit post id (1-5) from JSON
     ai_generated_response: Optional[str] = None
     empathy: Optional[str] = None
@@ -19,6 +28,7 @@ class UserResponseRead(BaseModel):
     """Schema for reading a user response."""
     id: int
     user_identifier: str
+    role: Optional[UserRole] = None
     response_date: datetime
     article_id: int
     ai_generated_response: Optional[str]
@@ -35,6 +45,7 @@ class UserResponseRead(BaseModel):
 class CreateOwnPostResponseCreate(BaseModel):
     """Schema for creating a response to user's own post."""
     user_identifier: str
+    role: UserRole
     article_id: Optional[int] = None  # If provided, updates existing record; otherwise creates new
     post_content: Optional[str] = None
     ai_generated_response: Optional[str] = None
@@ -50,6 +61,7 @@ class CreateOwnPostResponseRead(BaseModel):
     """Schema for reading a create-own-post response."""
     id: int
     user_identifier: str
+    role: Optional[UserRole] = None
     response_date: datetime
     article_id: Optional[int] = None
     post_content: Optional[str]
@@ -66,9 +78,11 @@ class CreateOwnPostResponseRead(BaseModel):
 
 
 class UserFeedbackCreate(BaseModel):
-    """Schema for creating user feedback."""
+    """Schema for creating user feedback. 1 = strongly disagree, 5 = strongly agree."""
     user_identifier: str
-    rate: int  # 1-5
+    role: UserRole
+    simple_to_use: int = Field(ge=1, le=5)
+    overall_satisfaction: int = Field(ge=1, le=5)
     comment: Optional[str] = None
 
 
@@ -76,8 +90,11 @@ class UserFeedbackRead(BaseModel):
     """Schema for reading user feedback."""
     id: int
     user_identifier: str
+    role: Optional[UserRole] = None
     response_date: datetime
     rate: int
+    simple_to_use: Optional[int] = None
+    overall_satisfaction: Optional[int] = None
     comment: Optional[str]
 
     class Config:

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from './AuthProvider'
+import { USER_ROLES, useAuth, type UserRole } from './AuthProvider'
 import { api } from '../../shared/api'
 
 export const LoginPage: React.FC = () => {
@@ -8,6 +8,7 @@ export const LoginPage: React.FC = () => {
 	const { login } = useAuth()
 	const [emailOrName, setEmailOrName] = useState('')
 	const [password, setPassword] = useState('')
+	const [role, setRole] = useState<UserRole | ''>('')
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 
@@ -15,11 +16,11 @@ export const LoginPage: React.FC = () => {
 		e.preventDefault()
 		setError(null)
 		const identifier = emailOrName.trim()
-		if (!identifier) return
+		if (!identifier || !role) return
 		setLoading(true)
 		try {
 			await api.login({ username: identifier, password })
-			login(identifier)
+			login(identifier, role)
 			navigate('/home')
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Invalid password')
@@ -31,7 +32,7 @@ export const LoginPage: React.FC = () => {
 	return (
 		<div className="container">
 			<div style={{ textAlign: 'center', marginBottom: 24 }}>
-				<h1 style={{ fontSize: '32px', margin: '0 0 8px 0', color: 'var(--primary)' }}>Peer Support System</h1>
+				<h1 style={{ fontSize: '32px', margin: '0 0 8px 0', color: 'var(--primary)' }}>Peer Support Evaluation System</h1>
 				<p style={{ color: 'var(--muted)', fontSize: '16px', margin: 0 }}>Sign in to continue</p>
 			</div>
 			<form onSubmit={handleSubmit} className="card">
@@ -45,6 +46,15 @@ export const LoginPage: React.FC = () => {
 						required
 						autoComplete="username"
 					/>
+				</label>
+				<label>
+					<span>Role</span>
+					<select value={role} onChange={(e) => setRole(e.target.value as UserRole | '')} required>
+						<option value="">Select your role</option>
+						{USER_ROLES.map((option) => (
+							<option key={option} value={option}>{option}</option>
+						))}
+					</select>
 				</label>
 				<label>
 					<span>Password</span>

@@ -43,6 +43,10 @@ class Settings:
 
     # Auth
     SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-change-in-production")
+    # Shared login password. Set COMMON_PASSWORD in the environment or .env.
+    COMMON_PASSWORD: str = os.getenv("COMMON_PASSWORD", "")
+    # Separate from the participant password. Required for GET /export.
+    EXPORT_KEY: str = os.getenv("EXPORT_KEY", "")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 

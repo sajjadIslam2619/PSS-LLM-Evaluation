@@ -2,14 +2,64 @@ import React, { useState } from 'react'
 import { useAuth } from '../auth/AuthProvider'
 import { api } from '../../shared/api'
 
+const LIKERT_OPTIONS = [
+	{ value: 1, label: 'Strongly disagree' },
+	{ value: 2, label: 'Disagree' },
+	{ value: 3, label: 'Neutral' },
+	{ value: 4, label: 'Agree' },
+	{ value: 5, label: 'Strongly agree' },
+]
+
+const LikertQuestion: React.FC<{
+	prompt: string
+	value: number | null
+	onChange: (value: number) => void
+}> = ({ prompt, value, onChange }) => (
+	<fieldset style={{ border: 'none', margin: '0 0 24px 0', padding: 0, textAlign: 'left' }}>
+		<legend style={{ fontSize: '16px', fontWeight: 600, marginBottom: 10, color: 'var(--text)', padding: 0 }}>
+			{prompt}
+		</legend>
+		<div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
+			{LIKERT_OPTIONS.map((option) => {
+				const isSelected = value === option.value
+				return (
+					<button
+						key={option.value}
+						type="button"
+						aria-pressed={isSelected}
+						onClick={() => onChange(option.value)}
+						style={{
+							flex: '1 1 0',
+							textAlign: 'center',
+							padding: '10px 6px',
+							borderRadius: '8px',
+							border: '2px solid',
+							borderColor: isSelected ? 'var(--primary)' : '#2a355f',
+							background: isSelected ? 'var(--primary)' : 'transparent',
+							color: isSelected ? '#0b1020' : 'var(--text)',
+							fontSize: '14px',
+							fontWeight: 500,
+							lineHeight: 1.3,
+							cursor: 'pointer',
+						}}
+					>
+						{option.label}
+					</button>
+				)
+			})}
+		</div>
+	</fieldset>
+)
+
 export const ThankYouPage: React.FC = () => {
-	const { username, logout } = useAuth()
+	const { username, role, logout } = useAuth()
 	const [isLoggingOut, setIsLoggingOut] = useState(false)
-	const [rating, setRating] = useState<number>(0)
+	const [simpleToUse, setSimpleToUse] = useState<number | null>(null)
+	const [overallSatisfaction, setOverallSatisfaction] = useState<number | null>(null)
 	const [feedback, setFeedback] = useState('')
 	const [isSubmitted, setIsSubmitted] = useState(false)
 	const [isSubmitting, setIsSubmitting] = useState(false)
-	const [hoveredRating, setHoveredRating] = useState<number>(0)
+	const answersMissing = simpleToUse === null || overallSatisfaction === null
 
 	const handleLogout = () => {
 		setIsLoggingOut(true)
@@ -19,12 +69,14 @@ export const ThankYouPage: React.FC = () => {
 	}
 
 	const handleSubmitFeedback = async () => {
-		if (!username) return
+		if (!username || !role || simpleToUse === null || overallSatisfaction === null) return
 		setIsSubmitting(true)
 		try {
 			await api.createFeedback({
 				user_identifier: username,
-				rate: rating,
+				role,
+				simple_to_use: simpleToUse,
+				overall_satisfaction: overallSatisfaction,
 				comment: feedback.trim() || undefined,
 			})
 			setIsSubmitted(true)
@@ -36,35 +88,10 @@ export const ThankYouPage: React.FC = () => {
 		}
 	}
 
-	const renderStars = () => {
-		return [1, 2, 3, 4, 5].map((star) => (
-			<span
-				key={star}
-				style={{
-					cursor: 'pointer',
-					fontSize: '32px',
-					color: (hoveredRating || rating) >= star ? '#FFD700' : '#e0e0e0', // Gold or Gray
-					transition: 'color 0.2s',
-				}}
-				onMouseEnter={() => setHoveredRating(star)}
-				onMouseLeave={() => setHoveredRating(0)}
-				onClick={() => setRating(star)}
-			>
-				★
-			</span>
-		))
-	}
-
 	return (
-		<div className="container">
-			<div style={{ textAlign: 'center', marginBottom: 24, padding: '0 20px', maxWidth: '600px', margin: '0 auto' }}>
-				<h1 style={{ fontSize: '32px', margin: '0 0 16px 0', color: 'var(--primary)' }}>Thank You!</h1>
-				{/* <p style={{ color: 'var(--muted)', fontSize: '18px', margin: '0 0 24px 0' }}>
-					Thank you for completing the evaluation, {username}!
-				</p> */}
-				<p style={{ color: 'var(--text)', fontSize: '16px', margin: '0 0 32px 0' }}>
-					Your feedback has been successfully submitted.
-				</p>
+		<div className="container" style={{ maxWidth: 920 }}>
+			<div style={{ textAlign: 'center', marginBottom: 24, padding: '0 20px', maxWidth: '920px', margin: '0 auto' }}>
+				<h1 style={{ fontSize: '32px', margin: '0 0 32px 0', color: 'var(--primary)' }}>Thank You!</h1>
 
 				{!isSubmitted ? (
 					<div style={{
@@ -75,16 +102,23 @@ export const ThankYouPage: React.FC = () => {
 						marginBottom: '32px',
 						border: '1px solid var(--border)'
 					}}>
-						<h3 style={{ margin: '0 0 16px 0', color: 'var(--text)' }}>Please rate the system usability. Your feedback helps us improve the experience.</h3>
+						<h3 style={{ margin: '0 0 20px 0', color: 'var(--text)', textAlign: 'center' }}>How did you like the app?</h3>
 
-						<div style={{ marginBottom: '20px' }}>
-							{renderStars()}
-						</div>
+						<LikertQuestion
+							prompt="It was simple to use this system."
+							value={simpleToUse}
+							onChange={setSimpleToUse}
+						/>
+						<LikertQuestion
+							prompt="Overall, I am satisfied with this system."
+							value={overallSatisfaction}
+							onChange={setOverallSatisfaction}
+						/>
 
 						<textarea
 							value={feedback}
 							onChange={(e) => setFeedback(e.target.value)}
-							placeholder="Please share your thoughts..."
+							placeholder="(Optional) Please share your thoughts, if you want to improve anything regarding the app..."
 							style={{
 								width: '100%',
 								minHeight: '100px',
@@ -102,14 +136,14 @@ export const ThankYouPage: React.FC = () => {
 
 						<button
 							onClick={handleSubmitFeedback}
-							disabled={rating === 0 || isSubmitting}
+							disabled={answersMissing || isSubmitting}
 							style={{
 								padding: '8px 16px',
 								borderRadius: '6px',
 								background: 'transparent', // Always transparent to match Logout initial state
-								color: rating === 0 || isSubmitting ? 'var(--muted)' : 'var(--primary)',
-								border: rating === 0 || isSubmitting ? '2px solid var(--muted)' : '2px solid var(--primary)',
-								cursor: rating === 0 || isSubmitting ? 'not-allowed' : 'pointer',
+								color: answersMissing || isSubmitting ? 'var(--muted)' : 'var(--primary)',
+								border: answersMissing || isSubmitting ? '2px solid var(--muted)' : '2px solid var(--primary)',
+								cursor: answersMissing || isSubmitting ? 'not-allowed' : 'pointer',
 								fontSize: '14px',
 								fontWeight: '500',
 								transition: 'all 0.3s ease',

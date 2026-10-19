@@ -14,6 +14,7 @@ class CreateOwnPostResponse(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_identifier: Mapped[str] = mapped_column(String(255), nullable=False, index=True)  # name/email
+    role: Mapped[str] = mapped_column(String(100), nullable=True)
     response_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     article_id: Mapped[int] = mapped_column(Integer, nullable=True)  # max(existing) + 1
     post_content: Mapped[str] = mapped_column(Text, nullable=True)  # user's post content
