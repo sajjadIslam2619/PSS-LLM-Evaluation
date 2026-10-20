@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
-import { api, type RedditPost } from '../../shared/api'
+import { api, type ModelStatus, type RedditPost } from '../../shared/api'
 import labels from './labels.json'
 
 export const HomePage: React.FC = () => {
@@ -25,10 +25,14 @@ export const HomePage: React.FC = () => {
 	const [userCustomResponse, setUserCustomResponse] = useState('')
 	const [responseGenerating, setResponseGenerating] = useState(false)
 	const [responseError, setResponseError] = useState<string | null>(null)
+	// Set when a default response is shown instead of an AI-generated one
+	type ResponseNotice = { message: string; models: ModelStatus[] }
+	const [responseNotice, setResponseNotice] = useState<ResponseNotice | null>(null)
 
 	// Per-post cache so we can save all posts on Submit and restore when navigating back
 	type PostFormData = {
 		response: string
+		responseNotice: ResponseNotice | null
 		userCustomResponse: string
 		selectedLabels: { name: string; percentage: number }[]
 		customLabels: string[]
@@ -61,6 +65,7 @@ export const HomePage: React.FC = () => {
 		if (!post.trim()) return
 		setResponseGenerating(true)
 		setResponseError(null)
+		setResponseNotice(null)
 		try {
 			const pid = posts[currentPostIndex]?.id
 			const data = await api.getGeneratedResponse(post.trim(), pid)
@@ -70,6 +75,12 @@ export const HomePage: React.FC = () => {
 			} else {
 				setResponse(data.response || '')
 				setResponseError(null)
+				if (data.source === 'default') {
+					setResponseNotice({
+						message: 'The AI model is not connected, so a default response is shown below.',
+						models: data.models ?? [],
+					})
+				}
 			}
 		} catch (e) {
 			console.error('Failed to generate response:', e)
@@ -77,6 +88,10 @@ export const HomePage: React.FC = () => {
 			if (fallback) {
 				setResponse(fallback)
 				setResponseError(null)
+				setResponseNotice({
+					message: 'Could not reach the server, so no AI models are connected. A default response is shown below.',
+					models: [],
+				})
 			} else {
 				setResponseError('Something went wrong calling the AI API.')
 			}
@@ -118,6 +133,7 @@ export const HomePage: React.FC = () => {
 
 	const getCurrentFormData = (): PostFormData => ({
 		response,
+		responseNotice,
 		userCustomResponse,
 		selectedLabels,
 		customLabels,
@@ -155,8 +171,10 @@ export const HomePage: React.FC = () => {
 		setCurrentPostIndex(prevIndex)
 		setPost(posts[prevIndex]?.content ?? '')
 		const cached = responsesByPostIndex[prevIndex]
+		setResponseError(null)
 		if (cached) {
 			setResponse(cached.response)
+			setResponseNotice(cached.responseNotice)
 			setUserCustomResponse(cached.userCustomResponse)
 			setSelectedLabels(cached.selectedLabels)
 			setCustomLabels(cached.customLabels)
@@ -165,6 +183,7 @@ export const HomePage: React.FC = () => {
 			setSafe(cached.safe)
 		} else {
 			setResponse('')
+			setResponseNotice(null)
 			setUserCustomResponse('')
 			setSelectedLabels(posts[prevIndex]?.labels ?? [])
 			setCustomLabels([])
@@ -194,8 +213,10 @@ export const HomePage: React.FC = () => {
 			setCurrentPostIndex(nextIndex)
 			setPost(posts[nextIndex]?.content ?? '')
 			const cached = responsesByPostIndex[nextIndex]
+			setResponseError(null)
 			if (cached) {
 				setResponse(cached.response)
+				setResponseNotice(cached.responseNotice)
 				setUserCustomResponse(cached.userCustomResponse)
 				setSelectedLabels(cached.selectedLabels)
 				setCustomLabels(cached.customLabels)
@@ -204,6 +225,7 @@ export const HomePage: React.FC = () => {
 				setSafe(cached.safe)
 			} else {
 				setResponse('')
+				setResponseNotice(null)
 				setUserCustomResponse('')
 				setSelectedLabels(posts[nextIndex]?.labels ?? [])
 				setCustomLabels([])
@@ -427,6 +449,35 @@ export const HomePage: React.FC = () => {
 							)}
 							{responseError && (
 								<p style={{ marginTop: '8px', color: '#e74c3c', fontSize: '15px' }}>{responseError}</p>
+							)}
+							{responseNotice && (
+								<div
+									role="status"
+									style={{
+										marginTop: '8px',
+										padding: '10px 12px',
+										border: '1px solid #f0ad4e',
+										borderRadius: '8px',
+										background: 'rgba(240, 173, 78, 0.12)',
+										color: 'var(--text)',
+										fontSize: '15px',
+										lineHeight: 1.5,
+									}}
+								>
+									<div style={{ fontWeight: 600, color: '#f0ad4e' }}>⚠️ {responseNotice.message}</div>
+									{responseNotice.models.length > 0 && (
+										<ul style={{ margin: '6px 0 0', paddingLeft: '20px' }}>
+											{responseNotice.models.map((m) => (
+												<li key={m.name}>
+													<span style={{ color: m.connected ? '#4caf50' : '#e74c3c', fontWeight: 600 }}>
+														{m.connected ? 'Connected' : 'Not connected'}
+													</span>
+													{' '}— {m.name} ({m.task}){m.detail && !m.connected ? `: ${m.detail}` : ''}
+												</li>
+											))}
+										</ul>
+									)}
+								</div>
 							)}
 						</div>
 

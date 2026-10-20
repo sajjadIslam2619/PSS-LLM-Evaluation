@@ -159,39 +159,55 @@ def _call_azure_openai(content: str, settings) -> str:
 CONFIG_ERROR_MSG = "Something went wrong calling the AI API."
 
 
+def _model_statuses(settings, azure_connected: bool, azure_detail: str) -> list[dict]:
+    """Connection status of the response-generation model, shown in the UI when a fallback response is used."""
+    return [
+        {
+            "name": f"Azure OpenAI ({settings.AZURE_OPENAI_DEPLOYMENT})",
+            "task": "Response generation",
+            "connected": azure_connected,
+            "detail": azure_detail,
+        },
+    ]
+
+
 @router.post("/generate-response", response_model=dict)
 async def generate_response(body: GenerateResponseRequest):
-    """Generate an AI response for the post using Azure OpenAI (GPT-4.1)."""
-    content = (body.post_content or "").strip()
-    if not content:
-        return {"response": "", "error": None}
+    """Generate an AI response for the post using Azure OpenAI (GPT-4.1).
 
-    def _try_default_response() -> dict | None:
+    `source` is "ai" for a model-generated response, "default" for the curated fallback
+    from redditPosts.json, or "none" when nothing could be returned.
+    """
+    content = (body.post_content or "").strip()
+    settings = get_settings()
+    if not content:
+        return {"response": "", "error": None, "source": "none", "models": []}
+
+    def _result(response: str, source: str, error: str | None, azure_connected: bool, azure_detail: str) -> dict:
+        return {
+            "response": response,
+            "error": error,
+            "source": source,
+            "models": _model_statuses(settings, azure_connected, azure_detail),
+        }
+
+    def _fallback_or_error(error: str | None, azure_detail: str) -> dict:
         fallback = _default_response_for_post(content, body.post_id)
         if fallback:
-            return {"response": fallback, "error": None}
-        return None
+            return _result(fallback, "default", None, False, azure_detail)
+        return _result("", "none", error, False, azure_detail)
 
-    settings = get_settings()
     if not settings.AZURE_OPENAI_API_KEY or not settings.AZURE_OPENAI_ENDPOINT:
         logger.warning("generate-response: AZURE_OPENAI_API_KEY or AZURE_OPENAI_ENDPOINT not set")
-        out = _try_default_response()
-        if out is not None:
-            return out
-        return {"response": "", "error": CONFIG_ERROR_MSG}
+        return _fallback_or_error(CONFIG_ERROR_MSG, "Not configured (API key or endpoint missing)")
 
     try:
         text = await asyncio.to_thread(_call_azure_openai, content, settings)
-        if not (text or "").strip():
-            out = _try_default_response()
-            if out is not None:
-                return out
-            return {"response": "", "error": None}
-        return {"response": text.strip(), "error": None}
     except Exception as e:
         logger.exception("generate-response: Azure OpenAI failed: %s", e)
-        out = _try_default_response()
-        if out is not None:
-            return out
         err_msg = str(e).strip() or "The AI service failed. Please try again later."
-        return {"response": "", "error": err_msg}
+        return _fallback_or_error(err_msg, "Request failed")
+
+    if not (text or "").strip():
+        return _fallback_or_error(None, "Returned an empty response")
+    return _result(text.strip(), "ai", None, True, "Connected")
