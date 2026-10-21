@@ -64,6 +64,8 @@ db.sqlite3-journal
 # SQLite databases (local data)
 *.db
 *.db-journal
+*.db.gz
+PSS-FastAPI-Backend/backups/
 
 # Flask stuff:
 instance/

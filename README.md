@@ -200,6 +200,28 @@ curl -H "X-Export-Key: <EXPORT_KEY>" -o pss-data.zip https://your-backend.exampl
 
 Use a long random `EXPORT_KEY` in production, since anyone with it can download all participant data.
 
+### Database utility scripts
+
+Run these from `PSS-FastAPI-Backend` with the backend's Python environment. They always use the database configured for the backend (`DATABASE_URL`, or `pss.db` by default), whatever folder you run them from.
+
+| Command | What it does |
+| --- | --- |
+| `python scripts/backup_db.py` | Saves a compressed copy of `pss.db` to `backups/pss-YYYYmmdd-HHMMSS.db.gz` and keeps the newest 10, deleting older backups. Safe to run while the backend is running. Options: `--dest <folder>`, `--keep <n>`. |
+| `python scripts/db_stats.py` | Shows rows per table, participants by role, and how many participants finished all Reddit posts, created a post and submitted feedback. Read-only. Add `--participants` for one line per participant. |
+| `python scripts/reset_db.py` | Shows row counts, asks you to type `DELETE`, backs up the database, then deletes all rows and keeps the tables. Use it once before the study to clear test data. Stop the backend first. |
+
+**Back up regularly in production.** With SQLite, all study data is in one file. On a Linux server, schedule a daily backup with cron:
+
+```bash
+0 3 * * * cd /path/to/PSS-FastAPI-Backend && venv/bin/python scripts/backup_db.py
+```
+
+Also copy the `backups/` folder off the server from time to time, for example to S3 or your own computer, since backups on the same disk don't protect against losing the server. `backups/` is gitignored because it contains participant data.
+
+**To restore a backup**, stop the backend, decompress the backup, rename it to `pss.db`, put it in `PSS-FastAPI-Backend/`, and start the backend.
+
+The backup and reset scripts' automatic backup support only SQLite. With PostgreSQL, use `pg_dump` or your provider's automated backups, such as RDS snapshots.
+
 ### Database schema
 
 The database has three tables with no foreign keys between them. Each row is one submission, and rows from the same participant share the same `user_identifier`. All tables also have:
@@ -284,6 +306,11 @@ PSS-LLM-Evaluation/
 │   ├── models/                    # SQLAlchemy models
 │   ├── schemas/                   # Pydantic schemas
 │   ├── routers/                   # auth, posts, responses, create_own_post, feedback, export
+│   ├── scripts/                   # Utility scripts and notebooks (not used by the running app)
+│   │   ├── backup_db.py           # Compressed, timestamped SQLite backup
+│   │   ├── reset_db.py            # Delete all participant data (backs up first)
+│   │   ├── db_stats.py            # Study progress summary
+│   │   └── classify_reddit_posts.ipynb  # Runs the classifier on redditPosts.json
 │   └── data/redditPosts.json      # Posts shown to participants
 ├── PSS-React-Frontend/
 │   ├── vite.config.ts             # base: /PSS-LLM-Evaluation/
