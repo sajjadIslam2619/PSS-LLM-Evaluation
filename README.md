@@ -6,8 +6,10 @@ A web app for evaluating LLM-generated responses in a **Peer Support System (PSS
 
 - **Reddit post evaluation**: participants work through a fixed set of Reddit posts (`PSS-FastAPI-Backend/data/redditPosts.json`). For each one they see an AI-generated response, rate it, edit it if they want, and pick the mental status labels they think apply.
 - **Create your own post**: participants write a post. A local [multiMentalRoBERTA-6-class](https://huggingface.co/SajjadIslam/multiMentalRoBERTA-6-class) model shows the top two detected mental states, and Azure OpenAI generates a response for them to rate.
-- **Feedback**: participants give an overall rating and comment at the end.
-- **Fallback responses**: if Azure OpenAI isn't configured or fails, the backend returns the curated `default-response` from `redditPosts.json` for that post.
+- **Feedback (thank-you page)**: participants answer four 1–5 agreement questions about the system and the AI, plus an optional comment.
+- **Fallback responses**: if Azure OpenAI isn't configured or fails, the backend returns the curated `default-response` from `redditPosts.json` for that post, and the page shows a notice saying the AI model isn't connected.
+- **Roles**: participants pick a role at login, and it's saved with every submission.
+- **Data export**: researchers can download all saved data as CSV files from a key-protected URL.
 
 ## Architecture
 
@@ -67,7 +69,53 @@ Open **http://localhost:5173/PSS-LLM-Evaluation/**. The `/PSS-LLM-Evaluation/` p
 
 ### 3. Log in
 
-Enter any name or email as the username, with the shared password **`demo123`**. There are no individual user accounts. The name or email you enter is stored with each response as `user_identifier`.
+The login page asks for three things:
+
+| Field | What to enter |
+| --- | --- |
+| Email or Name | Any name or email. It's saved with each submission as `user_identifier`. |
+| Password | The shared password set in `COMMON_PASSWORD` (see [Configuration](#configuration)). |
+| Role | One of the roles below. It's saved with each submission as `role`. |
+
+There are no individual user accounts. Everyone uses the same password, and participants are identified only by the name or email they type, so "John" and "john@example.com" count as two different participants.
+
+If `COMMON_PASSWORD` isn't set, every login fails with "Invalid password".
+
+**Roles:**
+
+- Peer Support Specialist
+- Peer Mentee
+- Research Team Members
+- Admin
+- Others
+
+The role list is defined in two places that must match: `USER_ROLES` in `PSS-React-Frontend/src/modules/auth/AuthProvider.tsx` and `UserRole` in `PSS-FastAPI-Backend/schemas/user.py`. The backend rejects any role not in its list. The role doesn't change what a participant sees; it's only recorded for analysis.
+
+## Participant flow
+
+1. **Login** (`/`): name or email, shared password and role.
+2. **Review Reddit posts** (`/home`): for each post, the participant:
+   - reads the post and its mental state labels, and selects their own labels if they disagree. The selectable labels are Stress, Depression, PTSD, Suicidal, Anxiety, Substance Use Risk, Social Isolation and None, defined in `PSS-React-Frontend/src/modules/home/labels.json`.
+   - clicks **Generate Response with AI** and reads the response
+   - rates the response as empathic, relevant and safe, on a scale from Agree to Disagree, with Not Applicable as an option
+   - optionally writes their own improved response
+
+   Each post is saved when the participant clicks **Next Post**. After the last post they choose **Save and Exit** or **Create your own post**.
+3. **Create your own post** (`/create-post`, optional): the participant writes a post. Once it has at least 30 words, the classifier shows the top two detected mental states. The participant then generates, rates and optionally rewrites a response, as on the Reddit posts.
+4. **Thank-you page** (`/thank-you`): the participant answers four questions on a five-point scale and can add a comment.
+
+### Thank-you page questions
+
+| Question | Saved in column |
+| --- | --- |
+| It was simple to use this system. | `simple_to_use` |
+| Overall, I am satisfied with this system. | `overall_satisfaction` |
+| I would trust the AI-generated classification of a Veteran's mental state. | `trust_ai_classification` |
+| I would feel comfortable using the AI-generated response with some modification in my peer support work. | `comfortable_using_ai_response` |
+
+Answers are saved as numbers: 1 = Strongly disagree, 2 = Disagree, 3 = Neutral, 4 = Agree, 5 = Strongly agree. All four questions must be answered before **Submit Feedback** is enabled. The comment is optional.
+
+The database stores only the numbers, not the question text. The link between each column and its wording is the table above and the `prompt` values in `PSS-React-Frontend/src/modules/thankyou/ThankYouPage.tsx`. If you reword a question during the study, record the date of the change.
 
 ## Configuration
 
@@ -79,8 +127,9 @@ Copy `.env.example` to `.env` and set the values you need. Real environment vari
 | --- | --- | --- |
 | `DATABASE_URL` | `sqlite:///./pss.db` | Database connection. Use a PostgreSQL URL in production. |
 | `SECRET_KEY` | dev default | JWT signing secret. **Set this in production.** |
+| `COMMON_PASSWORD` | none | Shared login password for all participants. **Required**; login fails without it. |
+| `EXPORT_KEY` | none | Key for downloading data from `/export`. Keep it separate from `COMMON_PASSWORD`. If unset, export is disabled. |
 | `DEBUG` | `true` | Set to `false` in production. |
-| `CORS_ORIGINS` | `http://localhost:5173`, `http://127.0.0.1:5173` | Allowed frontend origins. |
 | `HUGGINGFACE_TOKEN` | none | Optional token for downloading the classifier model. |
 | `AZURE_OPENAI_ENDPOINT` | none | Azure OpenAI endpoint URL. |
 | `AZURE_OPENAI_API_KEY` | none | Azure OpenAI API key. |
@@ -88,6 +137,8 @@ Copy `.env.example` to `.env` and set the values you need. Real environment vari
 | `AZURE_OPENAI_API_VERSION` | `2024-12-01-preview` | Azure OpenAI API version. |
 
 The classifier model downloads the first time someone uses "Create your own post", so that first request can take a while. Later requests are fast.
+
+Allowed frontend origins (CORS) are set in `CORS_ORIGINS` in `config.py`, not in `.env`. They default to `http://localhost:5173` and `http://127.0.0.1:5173`. Add your deployed frontend origin there before deploying.
 
 ### Frontend
 
@@ -104,23 +155,104 @@ VITE_API_BASE_URL=https://your-backend.example.com
 | `POST` | `/auth/login` | Log in with `{ username, password }`; returns `{ token }`. |
 | `GET` | `/posts/reddit` | Returns the Reddit posts to evaluate. |
 | `POST` | `/posts/detect-labels` | Returns the top two detected mental-state labels for `{ post_content }`. |
-| `POST` | `/posts/generate-response` | Returns an Azure OpenAI response for `{ post_content, post_id? }`. |
+| `POST` | `/posts/generate-response` | Returns a response for `{ post_content, post_id? }`, plus `source` (`ai`, `default` or `none`) and the Azure OpenAI connection status. |
 | `POST` | `/responses` | Saves a participant's evaluation of a Reddit post. |
 | `POST` | `/create-own-post` | Saves a participant's evaluation of their own post. |
-| `POST` | `/feedback` | Saves overall feedback `{ user_identifier, rate, comment }`. |
+| `POST` | `/feedback` | Saves thank-you page answers `{ user_identifier, role, simple_to_use, overall_satisfaction, trust_ai_classification, comfortable_using_ai_response, comment? }`. |
+| `GET` | `/export` | Downloads all data as a zip of CSV files. Requires the export key. |
 | `GET` | `/health` | Health check. |
+| `GET` | `/health/config` | Shows whether the Azure OpenAI settings are present, without revealing their values. |
 
 See http://localhost:8000/docs for the full request and response schemas.
 
 ## Data
 
-Responses are stored in three tables:
+In development, data is stored in SQLite at `PSS-FastAPI-Backend/pss.db`. The file is gitignored because it contains participant data. You can open it with the `sqlite3` CLI or [DB Browser for SQLite](https://sqlitebrowser.org/). [`RUN.md`](RUN.md) has example queries.
 
-- `user_response`: evaluations of Reddit posts
-- `create_own_post_response`: evaluations of participant-written posts
-- `user_feedback`: overall ratings and comments
+### Exporting data
 
-In development these live in `PSS-FastAPI-Backend/pss.db`. You can open that file with the `sqlite3` CLI or [DB Browser for SQLite](https://sqlitebrowser.org/). [`RUN.md`](RUN.md) has example queries.
+With the backend running, open this URL in a browser:
+
+```
+http://localhost:8000/export?key=<EXPORT_KEY>
+```
+
+Replace `<EXPORT_KEY>` with the `EXPORT_KEY` value from `PSS-FastAPI-Backend/.env`. When deployed, use your backend's address instead of `http://localhost:8000`.
+
+The download is `pss-data.zip`, which contains:
+
+- `user_response.csv`
+- `create_own_post_response.csv`
+- `user_feedback.csv`
+
+The files are UTF-8 with a byte-order mark, so special characters display correctly in Excel. Each file has every column of its table, sorted by `id`.
+
+| Status | Meaning |
+| --- | --- |
+| `403 Invalid export key` | The key is wrong. |
+| `503 Export is disabled` | `EXPORT_KEY` isn't set on the server. |
+
+A key in the URL is saved in browser history and server logs. On a deployed server you can send the key in a header instead:
+
+```bash
+curl -H "X-Export-Key: <EXPORT_KEY>" -o pss-data.zip https://your-backend.example.com/export
+```
+
+Use a long random `EXPORT_KEY` in production, since anyone with it can download all participant data.
+
+### Database schema
+
+The database has three tables with no foreign keys between them. Each row is one submission, and rows from the same participant share the same `user_identifier`. All tables also have:
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | INTEGER | Primary key, auto-increment |
+| `user_identifier` | VARCHAR(255) | Required, indexed. The name or email typed at login. |
+| `role` | VARCHAR(100) | Role chosen at login. Empty for rows saved before roles were added. |
+| `response_date` | DATETIME | Required. Set by the server, in UTC. |
+
+#### `user_response`: evaluations of the Reddit posts
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `article_id` | INTEGER | Required. The post's `id` in `redditPosts.json`. |
+| `ai_generated_response` | VARCHAR(2000) | The response shown, whether AI-generated or the default. |
+| `empathy` | VARCHAR(50) | `Agree`, `Somewhat Agree`, `Neutral`, `Somewhat Disagree`, `Disagree` or `Not Applicable` |
+| `relevant` | VARCHAR(50) | Same scale as `empathy` |
+| `safe` | VARCHAR(50) | Same scale as `empathy` |
+| `modified_response` | VARCHAR(2000) | The participant's own rewritten response |
+| `mental_status` | VARCHAR(500) | Comma-separated: the labels shown with the post plus the labels the participant selected |
+
+#### `create_own_post_response`: evaluations of participants' own posts
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `article_id` | INTEGER | Set to the highest existing `article_id` plus one |
+| `post_content` | TEXT | The post the participant wrote |
+| `ai_generated_response` | VARCHAR(2000) | The AI response shown |
+| `empathy`, `relevant`, `safe` | VARCHAR(50) | Same scale as in `user_response` |
+| `modified_response` | VARCHAR(2000) | The participant's own rewritten response |
+| `ai_mental_status` | VARCHAR(500) | Comma-separated labels detected by the classifier |
+| `mental_status` | VARCHAR(500) | Comma-separated labels the participant selected |
+
+#### `user_feedback`: thank-you page answers
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `simple_to_use` | INTEGER | 1–5 |
+| `overall_satisfaction` | INTEGER | 1–5 |
+| `trust_ai_classification` | INTEGER | 1–5 |
+| `comfortable_using_ai_response` | INTEGER | 1–5 |
+| `rate` | INTEGER | Required. A copy of `overall_satisfaction`, kept for older data. |
+| `comment` | TEXT | Optional comment |
+
+See [Thank-you page questions](#thank-you-page-questions) for the wording of each question.
+
+#### Notes on the schema
+
+- **Older rows can have empty columns.** The backend adds missing columns to an existing database when it starts. Rows saved before a column existed have no value in it.
+- **`mental_status` is used differently in the two evaluation tables.** In `user_response` it combines the shown labels and the participant's selections. In `create_own_post_response` it holds only the participant's selections, and the classifier's labels are in `ai_mental_status`.
+- **PostgreSQL enforces the 2,000-character limit on `VARCHAR(2000)` columns.** SQLite ignores it. Before moving to PostgreSQL, consider changing the response columns to `TEXT`.
 
 ## Building for production
 
@@ -132,7 +264,7 @@ npm run build      # output in dist/
 npm run preview    # serve the build locally
 ```
 
-**Backend**: set `DATABASE_URL`, `SECRET_KEY`, the Azure OpenAI variables and `CORS_ORIGINS` (including your deployed frontend origin) in the environment. Then:
+**Backend**: set `DATABASE_URL`, `SECRET_KEY`, `COMMON_PASSWORD`, `EXPORT_KEY` and the Azure OpenAI variables in the environment. Add your deployed frontend origin to `CORS_ORIGINS` in `config.py`. Then:
 
 ```bash
 python -m init_db
@@ -151,7 +283,7 @@ PSS-LLM-Evaluation/
 │   ├── database.py, init_db.py    # DB engine and table creation
 │   ├── models/                    # SQLAlchemy models
 │   ├── schemas/                   # Pydantic schemas
-│   ├── routers/                   # auth, posts, responses, create_own_post, feedback
+│   ├── routers/                   # auth, posts, responses, create_own_post, feedback, export
 │   └── data/redditPosts.json      # Posts shown to participants
 ├── PSS-React-Frontend/
 │   ├── vite.config.ts             # base: /PSS-LLM-Evaluation/
@@ -166,7 +298,9 @@ PSS-LLM-Evaluation/
 
 - **"Something went wrong, no mental status detected by AI"**: check the backend terminal for the model loading error. Common causes are no internet access during the first model download or an invalid `HUGGINGFACE_TOKEN`. [`RUN.md`](RUN.md) walks through debugging this step by step.
 - **"Something went wrong calling the AI API"**: Azure OpenAI isn't configured. Check http://localhost:8000/health/config.
-- **CORS errors in the browser**: make sure the frontend's origin is listed in `CORS_ORIGINS`.
+- **CORS errors in the browser**: make sure the frontend's origin is listed in `CORS_ORIGINS` in `config.py`.
+- **"Failed to fetch" on every page**: the frontend can't reach the backend. Check that the backend's port matches `VITE_API_BASE_URL`, which defaults to `http://localhost:8000`.
+- **"Invalid password" at login**: `COMMON_PASSWORD` isn't set, or the password doesn't match it.
 
 ## License
 

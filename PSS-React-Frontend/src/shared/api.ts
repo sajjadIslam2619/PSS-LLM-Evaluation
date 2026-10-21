@@ -58,6 +58,8 @@ export type FeedbackCreate = {
 	role: string
 	simple_to_use: number
 	overall_satisfaction: number
+	trust_ai_classification: number
+	comfortable_using_ai_response: number
 	comment?: string
 }
 

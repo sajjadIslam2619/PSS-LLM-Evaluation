@@ -19,4 +19,6 @@ class UserFeedback(Base):
     rate: Mapped[int] = mapped_column(Integer, nullable=False)  # copy of overall_satisfaction
     simple_to_use: Mapped[int] = mapped_column(Integer, nullable=True)  # 1 strongly disagree, 5 strongly agree
     overall_satisfaction: Mapped[int] = mapped_column(Integer, nullable=True)  # 1 strongly disagree, 5 strongly agree
+    trust_ai_classification: Mapped[int] = mapped_column(Integer, nullable=True)  # 1 strongly disagree, 5 strongly agree
+    comfortable_using_ai_response: Mapped[int] = mapped_column(Integer, nullable=True)  # 1 strongly disagree, 5 strongly agree
     comment: Mapped[str] = mapped_column(Text, nullable=True)

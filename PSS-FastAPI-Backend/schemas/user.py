@@ -83,6 +83,8 @@ class UserFeedbackCreate(BaseModel):
     role: UserRole
     simple_to_use: int = Field(ge=1, le=5)
     overall_satisfaction: int = Field(ge=1, le=5)
+    trust_ai_classification: int = Field(ge=1, le=5)
+    comfortable_using_ai_response: int = Field(ge=1, le=5)
     comment: Optional[str] = None
 
 
@@ -95,6 +97,8 @@ class UserFeedbackRead(BaseModel):
     rate: int
     simple_to_use: Optional[int] = None
     overall_satisfaction: Optional[int] = None
+    trust_ai_classification: Optional[int] = None
+    comfortable_using_ai_response: Optional[int] = None
     comment: Optional[str]
 
     class Config:

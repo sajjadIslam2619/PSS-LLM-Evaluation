@@ -56,10 +56,16 @@ export const ThankYouPage: React.FC = () => {
 	const [isLoggingOut, setIsLoggingOut] = useState(false)
 	const [simpleToUse, setSimpleToUse] = useState<number | null>(null)
 	const [overallSatisfaction, setOverallSatisfaction] = useState<number | null>(null)
+	const [trustAiClassification, setTrustAiClassification] = useState<number | null>(null)
+	const [comfortableUsingAiResponse, setComfortableUsingAiResponse] = useState<number | null>(null)
 	const [feedback, setFeedback] = useState('')
 	const [isSubmitted, setIsSubmitted] = useState(false)
 	const [isSubmitting, setIsSubmitting] = useState(false)
-	const answersMissing = simpleToUse === null || overallSatisfaction === null
+	const answersMissing =
+		simpleToUse === null ||
+		overallSatisfaction === null ||
+		trustAiClassification === null ||
+		comfortableUsingAiResponse === null
 
 	const handleLogout = () => {
 		setIsLoggingOut(true)
@@ -69,7 +75,14 @@ export const ThankYouPage: React.FC = () => {
 	}
 
 	const handleSubmitFeedback = async () => {
-		if (!username || !role || simpleToUse === null || overallSatisfaction === null) return
+		if (
+			!username ||
+			!role ||
+			simpleToUse === null ||
+			overallSatisfaction === null ||
+			trustAiClassification === null ||
+			comfortableUsingAiResponse === null
+		) return
 		setIsSubmitting(true)
 		try {
 			await api.createFeedback({
@@ -77,6 +90,8 @@ export const ThankYouPage: React.FC = () => {
 				role,
 				simple_to_use: simpleToUse,
 				overall_satisfaction: overallSatisfaction,
+				trust_ai_classification: trustAiClassification,
+				comfortable_using_ai_response: comfortableUsingAiResponse,
 				comment: feedback.trim() || undefined,
 			})
 			setIsSubmitted(true)
@@ -113,6 +128,16 @@ export const ThankYouPage: React.FC = () => {
 							prompt="Overall, I am satisfied with this system."
 							value={overallSatisfaction}
 							onChange={setOverallSatisfaction}
+						/>
+						<LikertQuestion
+							prompt="I would trust the AI-generated classification of a Veteran's mental state."
+							value={trustAiClassification}
+							onChange={setTrustAiClassification}
+						/>
+						<LikertQuestion
+							prompt="I would feel comfortable using the AI-generated response (with some modification) in my peer support work."
+							value={comfortableUsingAiResponse}
+							onChange={setComfortableUsingAiResponse}
 						/>
 
 						<textarea

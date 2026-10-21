@@ -58,13 +58,18 @@ def ensure_role_column():
 
 
 def ensure_feedback_likert_columns():
-    """Add the two Likert columns to an existing user_feedback table."""
+    """Add the Likert columns to an existing user_feedback table."""
     inspector = inspect(sync_engine)
     if "user_feedback" not in inspector.get_table_names():
         return
     existing = {col["name"] for col in inspector.get_columns("user_feedback")}
     with sync_engine.connect() as conn:
-        for col in ("simple_to_use", "overall_satisfaction"):
+        for col in (
+            "simple_to_use",
+            "overall_satisfaction",
+            "trust_ai_classification",
+            "comfortable_using_ai_response",
+        ):
             if col in existing:
                 continue
             conn.execute(text(f"ALTER TABLE user_feedback ADD COLUMN {col} INTEGER"))
