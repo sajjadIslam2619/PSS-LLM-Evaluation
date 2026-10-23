@@ -1,37 +1,82 @@
 [
 	{
 		"id": 1,
-		"content": "I have been feeling really stressed lately, and I cannot pinpoint one specific cause. It feels more like a combination of responsibilities, expectations, and nonstop small tasks that keep piling up. Even when I finish something, I barely feel relief before the next thing pops into my mind. I am always trying to catch up, and the constant mental load is exhausting. What worries me is that I am starting to feel worn out in ways I did not notice before. I forget simple things, I lose focus easily, and even things I used to enjoy feel like obligations now. My brain never seems to get a break. At night I lie down hoping to rest, but instead I start replaying the day or planning tomorrow. It is like I am always on alert. I have been trying to take small breaks, step away from screens, and set boundaries, but I feel guilty when I do. The stress builds up faster than I can manage it. I know I need to slow down and reset, but I am not sure how to start.",
-		"default-response": "That sounds really exhausting, and it makes sense you’re feeling worn down. Carrying a constant mental load like that, where your mind never really switches off, can drain you over time even if each task seems small on its own. The forgetfulness, loss of focus, and feeling like everything is an obligation are all signs your mind is overloaded, not that you’re doing anything wrong. It’s also understandable that taking breaks feels uncomfortable, but needing rest is not a failure or something to feel guilty about. You do not have to fix everything at once. Starting small, like giving yourself short, intentional moments where you allow your mind to pause without expectations, can help create a bit of space. You are not behind, and you are not alone in feeling this way.",
-		"category": "Stress 46%, Depression 34%",
-		"labels": [{"name": "Stress", "percentage": 46}, {"name": "Depression", "percentage": 34}]
+		"content": "Back in April my husband had a serious mental break - he left me, his wife, and our 2 kids for 4 months. He is back in the house now but very emotionally unavailable. I still do everything around the house& for the kids& I work full time.\n\nThe biggest problem I'm having is him saying he doesn't know what's next for us. he had said before he wanted us to work out, that gave me a lot of hope that he was getting the help he needs.\n\nBrings us to today. He says his medication makes him feel nothing. That he can't say if he loves me or not because he feels nothing and feels that way about everything. He thinks that I'm going to get hurt either way& that his therapist said he should distance himself from me. I don't want a divorce, I love this man with all that I have. Our relationship was always good before the mental break happened.\n\nI suffer severe anxiety& always have. I have recently changed a lot in my life to lessen it. I stopped smoking, I've dropped 50 pounds& I have been doing my own therapy.\n\nI guess my question is why am I the enemy in all of this? What should I even do?\n\nI don't want him to leave me.",
+		"default-response": "You are not the enemy, and you haven’t done anything wrong by loving him and wanting to save your marriage. ❤️ You’ve been carrying so much while trying to heal yourself, too. His emotional distance may be related to what he’s going through, but you deserve support and clarity as well. Keep focusing on your own healing, and remember that you cannot do the work of saving this relationship alone. You can love him deeply without losing yourself in the process. You matter, too.",
+		"category": "Depression 99.48%, Suicidal 0.36%",
+		"labels": [
+			{
+				"name": "Depression",
+				"percentage": 99.48
+			},
+			{
+				"name": "Suicidal",
+				"percentage": 0.36
+			}
+		]
 	},
 	{
 		"id": 2,
-		"content": "Hey everyone. I am not really sure what I am hoping to get out of writing this, but I guess I just need to put these thoughts somewhere. I have been dealing with depression for a long time, but lately it feels different. Heavier in a way that is hard to describe. Not dramatic, not a sudden crash, just this constant dull weight that makes everything feel like I am walking through fog. The strange thing is that nothing \"big\" is wrong in my life. I have a decent routine, responsibilities, deadlines, the usual stuff. People around me think I am doing fine because I keep showing up. I go to work, respond to emails, laugh at the right moments. But inside, everything feels muted. Like I am watching my own life from a distance and struggling to feel anything about it. Even things I normally care about feel flat. What makes it harder is the guilt. I keep telling myself I should not feel this way because others have it worse, or because I \"should\" be grateful, or because being tired is normal and I am just overthinking. But that voice only makes me feel more stuck. I know guilt is part of the cycle, but knowing it and breaking it are two completely different things. Lately I have been withdrawing more than usual. I avoid messages because I do not want to pretend to be \"okay.\" I turn down plans because I cannot imagine getting through small talk without feeling exhausted. Even simple tasks like cleaning my room or making a proper meal feel overwhelming. I do them eventually, but they take so much more energy than they should. I have been trying to take small steps. Going for a walk at least once a day. Journaling even if it is just a few lines. Listening to music that feels grounding. Some days these things help a little. Other days they do not help at all and I feel ridiculous for trying. But I keep reminding myself that small things count, even when the progress is not obvious. I think the hardest part is feeling like I cannot explain this to people in my real life. I do not want to worry anyone, and I do not want to hear the usual \"just stay positive\" suggestions that make me feel misunderstood. Depression is not about being negative. It is about being overwhelmed by a tiredness that does not go away, a kind of emotional static that makes it hard to connect with the world. Anyway, if you read this far, thank you. I know everyone here is dealing with their own struggles and I appreciate this community for being a place where people can talk honestly without judgment. I guess I just needed to say out loud that I am trying. Even if progress is slow. Even if some days I do not feel it. I am still here and still trying to find my way forward.",
-		"default-response": "Thank you for sharing this so honestly. What you described makes a lot of sense, that quiet, heavy fog and emotional distance can be just as hard as anything more obvious. The fact that you are still showing up, taking small steps, and putting this into words says a lot about your strength, even if it does not feel that way. The guilt you mentioned is something many people struggle with, and it does not make your experience any less real or valid. You do not have to justify how you feel or compare it to anyone else’s situation. Even on the days when those small efforts feel pointless, they still matter. And so do you. You are not alone in this, and it is okay to take things one small step at a time.", 
-		"category": "Stress 46%, Depression 34%",
-		"labels": [{"name": "Stress", "percentage": 46}, {"name": "Depression", "percentage": 34}]
+		"content": "Hey all, former Army here! 7 years, got out in 2020 ( Covid Sucked!) and have been going job to job since. \n\nI finally made the decision to attend college full time and focus on my mental/physical health. I'm 32, no kids, 100% P&T, own a house that's way too big for me and want to get out of the PNW. \n\nIf you were in my shoes, what options would you consider? Overseas? Somewhere I can live with 100% and 5k monthly for school, be close to other veterans and travel? \n\nI greatly appreciate all opinions and advice!",
+		"default-response": "You’ve earned the chance to slow down and figure out what makes you happy. I’d look into places with a strong veteran community, affordable living, and good colleges that support veterans using their benefits. Overseas could be an amazing experience, but I’d also consider states with veteran-friendly benefits and easy access to travel. This is a great opportunity to build a life around your well-being, not just work. Best of luck with this next chapter! 💪",
+		"category": "Depression 94.53%, Suicidal 4.55%",
+		"labels": [
+			{
+				"name": "Depression",
+				"percentage": 94.53
+			},
+			{
+				"name": "Suicidal",
+				"percentage": 4.55
+			}
+		]
 	},
 	{
 		"id": 3,
-		"content": "Some days I feel completely fine, and then a small sound or moment brings everything back like it just happened. I know the past is over, but my body reacts before I can think. I am working on grounding techniques, but it is exhausting. Just needed to share somewhere people understand.",
-		"default-response": "You’re definitely not alone in this. It makes sense that your body reacts before your mind can catch up—trauma lives in the nervous system, not just in thoughts. A small trigger can flip that switch even when you know you’re safe. That doesn’t mean you’re weak or going backward. It’s also okay that grounding feels exhausting. The fact that you’re practicing it at all shows strength. Sometimes the goal isn’t to fix it—just to ride out the wave. Thank you for sharing. A lot of us understand that “fine… until suddenly not fine” feeling.",
-		"category": "PTSD 34%, Anxiety 26%",
-		"labels": [{"name": "PTSD", "percentage": 34}, {"name": "Anxiety", "percentage": 26}]
+		"content": "I spent 13 years active duty. Separated this past year due to medical reasons. Spent years fighting and sadly, my condition worsened and I could no longer fight to stay off LIMDU and the Medboard happened. I also did not receive 100%, there for, no medical retirement. I am actively working with the VA and VSO to get to 100%. (I want to preference I am not a person who feels like I am owed anything nor am I in this for a money grab. I dont even want to be ill. I didn't want to get it out. )\n\nWith that being said, in just a few months I'll hit a year of endless job applications. With only a handful of interviews since then. I still cannot land a job. I am a single parent. My ex and I are both prior. Sadly, also after they got out, they have not been able to land a job. Because my finances were better at the time of me separating and the expectation to only be out of a job for maybe 3 to 5 months. I have our children full time including my other kiddos (other kiddos are from a previous relationship that is no longer involved) and I do not expect child support either due to the same circumstances.\n\nI do not know what else to do. The money will be out in atleast 2 months. I uber and doordash, it helps us barely skate bye. Ive applied to fast food joints, local supermarkets, anything and its silence. Ive applied for unemployment and denied. Ive applied for food stamps, denied. Apparently, I make too much which is the most numbing of all when the only paycheck I receive is for my monthly disability that covers rent and utilities. I'm in school as well, but I havent seen a dime for the GI bill as well. (Which I have reached out to the VA for updates on whats the status and such)\n\nAnything helps and no, I'm not asking for money, bit asking for what helped you get a job. What helped you survive? What other resources are put there for jobs, I am so extremely desperate at this point. \n\n Im crumbling to stay on my feet and afloat for my children. I'm losing the will to keep fighting and stay strong. \n\nUpdate: I know its only been 24 hours if that. I just want to thank those in the comments and the DMs with advice and resources, provided. Though some were tough and a reality that I initially struggled to grasp with some of the advice, I do appreciate the honesty. I was up til 2 am last night researching and spent all my morning doing school work and more research. And a big thank you for the encouragement as well. I spent days, debating whether I should make a post or not. Spent days upon days crying myself to sleep because I was not sure if I was going to make it or how I was going to keep going. \n\nUpdate #2. Ive been fighting unemployment and I've been denied yet again. \"Disqualified\". Initally i was eligible for $3300, with $275 weekly, didnt recieve those pay outs. And this am woke up to they changed their determination to Disqualified.",
+		"default-response": "You’ve carried so much, and the fact that you’re still fighting for your children while dealing with all of this says a lot about your strength. Please don’t feel ashamed to ask for help or use the resources available to you. I’d recommend reaching out to your local American Legion or VFW, a county Veterans Service Office, and your school’s veterans resource center for employment assistance and emergency support. You don’t have to figure everything out alone, and you deserve support, too. ❤️",
+		"category": "Suicidal 92.17%, Depression 7.43%",
+		"labels": [
+			{
+				"name": "Suicidal",
+				"percentage": 92.17
+			},
+			{
+				"name": "Depression",
+				"percentage": 7.43
+			}
+		]
 	},
 	{
 		"id": 4,
-		"content": "Lately my anxiety has been showing up even on days when nothing particularly stressful is happening. I wake up with this tightness in my chest and it follows me around all day, like my mind is waiting for something to go wrong even when nothing is happening. I keep trying to reason with myself, telling my brain that there is no real threat, but the worry keeps looping in the background. What makes it harder is that the symptoms feel physical as much as mental. My heart speeds up over the smallest things, and then I get frustrated because I know it is irrational. The more I try to control it, the worse it feels. It is like my thoughts are racing ahead of me, predicting disasters that will probably never happen, but still feel real in the moment. I have been trying grounding exercises and breathing techniques, and sometimes they help a little, but it feels like a constant effort. I just wish I could turn my mind off for a while and feel genuinely calm instead of \"managing\" anxiety all the time. If anyone has been through something similar, I would appreciate hearing what helped you.",
-		"default-response": "That sounds really draining, especially when the anxiety shows up without a clear reason and sticks around all day. The physical symptoms you described are very real, and it makes sense that trying to “reason it away” can feel frustrating when your body is already in that heightened state. You are not failing by needing to manage it, and it is okay that the techniques only help a little sometimes. The fact that you are still trying different ways to cope says a lot about your resilience. You are definitely not alone in feeling this way, and it is okay to take it one moment at a time rather than trying to shut it off completely.",
-		"category": "PTSD 34%, Anxiety 26%",
-		"labels": [{"name": "PTSD", "percentage": 34}, {"name": "Anxiety", "percentage": 26}]
+		"content": "I'm well aware ESA's and service animals are very different and follow very different rules and guidelines and I guess im just here to ask for clarification. Recently I just brought up the idea to my landlord that I was seeking a cat as an emotional support animal for my mental health and would provide all necessary documentation for the animal. However, my landlord got back to me and immediately denied the request because of a previous tenant's cat who destroyed the carpets which had to be replaced before we moved in. I just silently accepted that fact but my mental health has really been on the decline the last couple months. I was looking up to see if she was even allowed to do that and im seeing all sorts of conflicting information such as:\n\n1. A landlord is not allowed according FHA to deny an ESA provided it was prescribed by a legitimate licensed mental health provider\n\n2. A private landlord *CAN* deny accommodation for an ESA if they own four or fewer apartments (which my landlord does)\n\n3. Number 2 only applies by the FHA if the landlord lives in one of those apartments (which she does not)\n\n4. The landlord cannot deny a legitimate ESA based on a previous tenants animal, unless the specific animal has a documented history of physical damage to the property.\n\nThese are just a few things I've seen looking for information about having an ESA. I really think an ESA would be beneficial in supporting my mental health and helping me heal but the laws and regulations are just so confusing and exhausting to go through. At the end of the day even with my mental health on the decline, I would still rather have a place to live at all and not get kicked out. I know there are specific state laws that apply to ESA's as well so if there are any other fellow vets in the Chicago, Illinois area who also had to navigate this, any tips or help would be greatly appreciated.",
+		"default-response": "You’re right that the rules can be confusing, and it’s understandable to want clarity before risking your housing. I’d recommend contacting an Illinois legal aid organization or the HUD Chicago office to review your landlord’s specific situation and whether an exemption applies. A previous tenant’s damage doesn’t automatically settle the question. You deserve support for your mental health, and it’s worth understanding your rights before giving up on the request.",
+		"category": "None 96.44%, Depression 2.21%",
+		"labels": [
+			{
+				"name": "None",
+				"percentage": 96.44
+			},
+			{
+				"name": "Depression",
+				"percentage": 2.21
+			}
+		]
 	},
 	{
 		"id": 5,
-		"content": "I feel completely overwhelmed and emotionally exhausted, like I am losing my ability to cope and do not know where to turn next.",
-		"default-response": "I’m really sorry you’re feeling this overwhelmed. When it reaches that point where everything feels like too much, it can feel scary and disorienting. It makes sense that you’re exhausted and unsure what to do next. You don’t have to figure everything out right now. Even just focusing on the next small step, like taking a few slow breaths, sitting somewhere quiet, or reaching out to someone you trust, can help create a little space. If it feels possible, talking to a friend, a counselor, or a support line can make a difference, you don’t have to carry this alone. I’m here with you, and you can take this one moment at a time.",
-		"category": "Suicidal 70%, Stress 20%",
-		"labels": [{"name": "Suicidal", "percentage": 70}, {"name": "Stress", "percentage": 20}]
+		"content": "39M, Marine Vet.\n\nBeen feeling low, lost, and broken.\n\nI served from 2005-2016.\n\nWent to college. Got my bachelor's degree and entered the corporate workforce. \n\nIt's been 4 and half years and 4 companies later. I have imposter syndrome alot. I had 2 companies I enjoyed but am at my current one because of a layoff earlier this year.\n\nBeen looking for somewhere else or something else. I miss my dog and my boyfriend the most. I get paid decently but wish I could work from home or have a better work life balance. \n\nSomedays I just feel so lost and like I'm going through the motions just to make it through the day",
+		"default-response": "You’ve already accomplished so much, even if it doesn’t feel that way right now. Transitioning from military service to civilian life isn’t easy, and layoffs can really shake your confidence. Having imposter syndrome doesn’t mean you’re not capable. It’s okay to want more than a paycheck—you deserve a career that gives you balance, fulfillment, and time with the people you love. You don’t have to figure everything out at once. Be kind to yourself; you’re still finding your way. ❤️",
+		"category": "Depression 99.32%, Suicidal 0.61%",
+		"labels": [
+			{
+				"name": "Depression",
+				"percentage": 99.32
+			},
+			{
+				"name": "Suicidal",
+				"percentage": 0.61
+			}
+		]
 	}
 ]

@@ -86,7 +86,7 @@ async def detect_labels(body: DetectLabelsRequest):
                 with_scores.append((str(label), float(score)))
         with_scores.sort(key=lambda x: x[1], reverse=True)
         top2 = with_scores[:2]
-        labels = [{"name": label, "percentage": round(score * 100)} for label, score in top2]
+        labels = [{"name": label, "percentage": round(score * 100, 2)} for label, score in top2]
         if not labels:
             logger.warning("detect-labels: No labels from model. Raw: %s", result)
             return {"labels": [], "error": DETECT_LABELS_ERROR_MSG}
