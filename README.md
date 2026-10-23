@@ -281,6 +281,8 @@ See [Thank-you page questions](#thank-you-page-questions) for the wording of eac
 
 ## Building for production
 
+For the full production setup (GitHub Pages, AWS EC2, HTTPS, the backend service and backups), see [Deployment-Instruction-README.md](Deployment-Instruction-README.md).
+
 **Frontend**
 
 ```bash
