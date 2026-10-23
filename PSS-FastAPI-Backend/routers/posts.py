@@ -127,28 +127,30 @@ class GenerateResponseRequest(BaseModel):
     post_id: int | None = None
 
 
-SYSTEM_PROMPT = """You are a supportive peer support assistant. The user will share a social media post (which may describe difficult feelings or experiences). Write a short, empathetic, and safe response that:
+SYSTEM_PROMPT = """You are a supportive peer support specialist. The user will share a social media post (which may describe difficult feelings or experiences). Write a short, empathetic, and safe response that:
 - Acknowledges their feelings without diagnosing
 - Is supportive and non-judgmental
 - Suggests reaching out to trusted people or professionals if appropriate
 - Stays concise (a few sentences)."""
 
 
-def _call_azure_openai(content: str, settings) -> str:
-    from openai import AzureOpenAI
-    client = AzureOpenAI(
-        api_version=settings.AZURE_OPENAI_API_VERSION,
-        azure_endpoint=settings.AZURE_OPENAI_ENDPOINT.rstrip("/"),
-        api_key=settings.AZURE_OPENAI_API_KEY,
+def _call_llm(content: str, settings) -> str:
+    from openai import OpenAI
+    client = OpenAI(
+        base_url=settings.OPENAI_ENDPOINT.strip().rstrip("/") or None,
+        api_key=settings.OPENAI_API_KEY,
     )
+    extra = {}
+    if settings.OPENAI_TEMPERATURE.strip():
+        extra["temperature"] = float(settings.OPENAI_TEMPERATURE)
     response = client.chat.completions.create(
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": content},
         ],
         max_completion_tokens=512,
-        temperature=0.7,
-        model=settings.AZURE_OPENAI_DEPLOYMENT,
+        model=settings.OPENAI_MODEL,
+        **extra,
     )
     if response.choices and response.choices[0].message.content:
         return response.choices[0].message.content.strip()
@@ -159,21 +161,21 @@ def _call_azure_openai(content: str, settings) -> str:
 CONFIG_ERROR_MSG = "Something went wrong calling the AI API."
 
 
-def _model_statuses(settings, azure_connected: bool, azure_detail: str) -> list[dict]:
+def _model_statuses(settings, llm_connected: bool, llm_detail: str) -> list[dict]:
     """Connection status of the response-generation model, shown in the UI when a fallback response is used."""
     return [
         {
-            "name": f"Azure OpenAI ({settings.AZURE_OPENAI_DEPLOYMENT})",
+            "name": f"AI model ({settings.OPENAI_MODEL})",
             "task": "Response generation",
-            "connected": azure_connected,
-            "detail": azure_detail,
+            "connected": llm_connected,
+            "detail": llm_detail,
         },
     ]
 
 
 @router.post("/generate-response", response_model=dict)
 async def generate_response(body: GenerateResponseRequest):
-    """Generate an AI response for the post using Azure OpenAI (GPT-4.1).
+    """Generate an AI response for the post with the configured OpenAI-compatible model.
 
     `source` is "ai" for a model-generated response, "default" for the curated fallback
     from redditPosts.json, or "none" when nothing could be returned.
@@ -183,28 +185,28 @@ async def generate_response(body: GenerateResponseRequest):
     if not content:
         return {"response": "", "error": None, "source": "none", "models": []}
 
-    def _result(response: str, source: str, error: str | None, azure_connected: bool, azure_detail: str) -> dict:
+    def _result(response: str, source: str, error: str | None, llm_connected: bool, llm_detail: str) -> dict:
         return {
             "response": response,
             "error": error,
             "source": source,
-            "models": _model_statuses(settings, azure_connected, azure_detail),
+            "models": _model_statuses(settings, llm_connected, llm_detail),
         }
 
-    def _fallback_or_error(error: str | None, azure_detail: str) -> dict:
+    def _fallback_or_error(error: str | None, llm_detail: str) -> dict:
         fallback = _default_response_for_post(content, body.post_id)
         if fallback:
-            return _result(fallback, "default", None, False, azure_detail)
-        return _result("", "none", error, False, azure_detail)
+            return _result(fallback, "default", None, False, llm_detail)
+        return _result("", "none", error, False, llm_detail)
 
-    if not settings.AZURE_OPENAI_API_KEY or not settings.AZURE_OPENAI_ENDPOINT:
-        logger.warning("generate-response: AZURE_OPENAI_API_KEY or AZURE_OPENAI_ENDPOINT not set")
-        return _fallback_or_error(CONFIG_ERROR_MSG, "Not configured (API key or endpoint missing)")
+    if not settings.OPENAI_API_KEY.strip():
+        logger.warning("generate-response: OPENAI_API_KEY not set")
+        return _fallback_or_error(CONFIG_ERROR_MSG, "Not configured (API key missing)")
 
     try:
-        text = await asyncio.to_thread(_call_azure_openai, content, settings)
+        text = await asyncio.to_thread(_call_llm, content, settings)
     except Exception as e:
-        logger.exception("generate-response: Azure OpenAI failed: %s", e)
+        logger.exception("generate-response: LLM call failed: %s", e)
         err_msg = str(e).strip() or "The AI service failed. Please try again later."
         return _fallback_or_error(err_msg, "Request failed")
 

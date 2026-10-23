@@ -52,16 +52,22 @@ class Settings:
 
     # App
     DEBUG: bool = os.getenv("DEBUG", "true").lower() == "true"
-    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://sajjadislam2619.github.io",
+    ]
 
     # Hugging Face: token for model download (detect-labels). Read from env first, then from .env file.
     HUGGINGFACE_TOKEN: str = os.getenv("HUGGINGFACE_TOKEN", "")
 
-    # Azure OpenAI (generate-response). Read from env first, then from .env file (same as HUGGINGFACE_TOKEN).
-    AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT", "")
-    AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY", "")
-    AZURE_OPENAI_DEPLOYMENT: str = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4.1")
-    AZURE_OPENAI_API_VERSION: str = os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
+    # LLM for generate-response, via any OpenAI-compatible Chat Completions API
+    # (OpenAI, AWS Bedrock, Azure, ...). Empty endpoint means api.openai.com.
+    OPENAI_ENDPOINT: str = os.getenv("OPENAI_ENDPOINT", "")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-5.5-2026-04-23")
+    # Empty = use the model's default. Many newer models only accept the default.
+    OPENAI_TEMPERATURE: str = os.getenv("OPENAI_TEMPERATURE", "")
 
 
 @lru_cache

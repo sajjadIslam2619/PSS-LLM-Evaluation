@@ -5,9 +5,9 @@ A web app for evaluating LLM-generated responses in a **Peer Support System (PSS
 ## Features
 
 - **Reddit post evaluation**: participants work through a fixed set of Reddit posts (`PSS-FastAPI-Backend/data/redditPosts.json`). For each one they see an AI-generated response, rate it, edit it if they want, and pick the mental status labels they think apply.
-- **Create your own post**: participants write a post. A local [multiMentalRoBERTA-6-class](https://huggingface.co/SajjadIslam/multiMentalRoBERTA-6-class) model shows the top two detected mental states, and Azure OpenAI generates a response for them to rate.
-- **Feedback (thank-you page)**: participants answer four 1–5 agreement questions about the system and the AI, plus an optional comment.
-- **Fallback responses**: if Azure OpenAI isn't configured or fails, the backend returns the curated `default-response` from `redditPosts.json` for that post, and the page shows a notice saying the AI model isn't connected.
+- **Create your own post**: participants write a post. A local [multiMentalRoBERTA-6-class](https://huggingface.co/SajjadIslam/multiMentalRoBERTA-6-class) model shows the top two detected mental states, and an LLM generates a response for them to rate.
+- **Feedback (thank-you page)**: participants answer five optional 1–5 agreement questions about the system and the AI, plus an optional comment.
+- **Fallback responses**: if the LLM isn't configured or fails, the backend returns the curated `default-response` from `redditPosts.json` for that post, and the page shows a notice saying the AI model isn't connected.
 - **Roles**: participants pick a role at login, and it's saved with every submission.
 - **Data export**: researchers can download all saved data as CSV files from a key-protected URL.
 
@@ -18,7 +18,7 @@ A web app for evaluating LLM-generated responses in a **Peer Support System (PSS
 | Frontend | `PSS-React-Frontend/` | React 18, TypeScript, Vite, React Router |
 | Backend | `PSS-FastAPI-Backend/` | FastAPI, SQLAlchemy, SQLite (dev) / PostgreSQL (prod) |
 | Label detection | backend, runs locally | Hugging Face `transformers` + PyTorch |
-| Response generation | backend | Azure OpenAI (GPT-4.1 deployment by default) |
+| Response generation | backend | Any OpenAI-compatible Chat Completions API (OpenAI, AWS Bedrock, Azure); `gpt-5.5-2026-04-23` by default |
 
 The frontend is deployed to GitHub Pages by `.github/workflows/deploy.yml` on every push to `main` that touches `PSS-React-Frontend/`.
 
@@ -26,7 +26,7 @@ The frontend is deployed to GitHub Pages by `.github/workflows/deploy.yml` on ev
 
 - Python 3.10+
 - Node.js 20+ and npm
-- Optional: an Azure OpenAI resource, needed for live AI responses
+- Optional: an API key for an OpenAI-compatible LLM provider, needed for live AI responses
 - Optional: a Hugging Face token, needed for gated models or to avoid download rate limits
 
 ## Getting started
@@ -132,10 +132,10 @@ Copy `.env.example` to `.env` and set the values you need. Real environment vari
 | `EXPORT_KEY` | none | Key for downloading data from `/export`. Keep it separate from `COMMON_PASSWORD`. If unset, export is disabled. |
 | `DEBUG` | `true` | Set to `false` in production. |
 | `HUGGINGFACE_TOKEN` | none | Optional token for downloading the classifier model. |
-| `AZURE_OPENAI_ENDPOINT` | none | Azure OpenAI endpoint URL. |
-| `AZURE_OPENAI_API_KEY` | none | Azure OpenAI API key. |
-| `AZURE_OPENAI_DEPLOYMENT` | `gpt-4.1` | Deployment name to call. |
-| `AZURE_OPENAI_API_VERSION` | `2024-12-01-preview` | Azure OpenAI API version. |
+| `OPENAI_ENDPOINT` | OpenAI (`https://api.openai.com/v1`) | Base URL of an OpenAI-compatible API, e.g. `https://bedrock-runtime.<region>.amazonaws.com/openai/v1` for AWS Bedrock or `https://<resource>.openai.azure.com/openai/v1/` for Azure. |
+| `OPENAI_API_KEY` | none | API key for that provider. Without it, the fallback responses are used. |
+| `OPENAI_MODEL` | `gpt-5.5-2026-04-23` | Model name (or Azure deployment name) to call. Use a dated snapshot so responses stay consistent across the study. |
+| `OPENAI_TEMPERATURE` | none (model default) | Optional sampling temperature. Leave unset for newer models, which reject anything but the default. |
 
 The classifier model downloads the first time someone uses "Create your own post", so that first request can take a while. Later requests are fast.
 
@@ -156,13 +156,13 @@ VITE_API_BASE_URL=https://your-backend.example.com
 | `POST` | `/auth/login` | Log in with `{ username, password }`; returns `{ token }`. |
 | `GET` | `/posts/reddit` | Returns the Reddit posts to evaluate. |
 | `POST` | `/posts/detect-labels` | Returns the top two detected mental-state labels for `{ post_content }`. |
-| `POST` | `/posts/generate-response` | Returns a response for `{ post_content, post_id? }`, plus `source` (`ai`, `default` or `none`) and the Azure OpenAI connection status. |
+| `POST` | `/posts/generate-response` | Returns a response for `{ post_content, post_id? }`, plus `source` (`ai`, `default` or `none`) and the LLM connection status. |
 | `POST` | `/responses` | Saves a participant's evaluation of a Reddit post. |
 | `POST` | `/create-own-post` | Saves a participant's evaluation of their own post. |
 | `POST` | `/feedback` | Saves thank-you page answers `{ user_identifier, role, simple_to_use?, overall_satisfaction?, trust_ai_classification?, comfortable_using_ai_response_as_is?, comfortable_using_ai_response_as_draft?, comment? }`. |
 | `GET` | `/export` | Downloads all data as a zip of CSV files. Requires the export key. |
 | `GET` | `/health` | Health check. |
-| `GET` | `/health/config` | Shows whether the Azure OpenAI settings are present, without revealing their values. |
+| `GET` | `/health/config` | Shows whether the LLM settings are present and which model is configured, without revealing the key. |
 
 See http://localhost:8000/docs for the full request and response schemas.
 
@@ -289,7 +289,7 @@ npm run build      # output in dist/
 npm run preview    # serve the build locally
 ```
 
-**Backend**: set `DATABASE_URL`, `SECRET_KEY`, `COMMON_PASSWORD`, `EXPORT_KEY` and the Azure OpenAI variables in the environment. Add your deployed frontend origin to `CORS_ORIGINS` in `config.py`. Then:
+**Backend**: set `DATABASE_URL`, `SECRET_KEY`, `COMMON_PASSWORD`, `EXPORT_KEY` and the `OPENAI_*` variables in the environment. Add your deployed frontend origin to `CORS_ORIGINS` in `config.py`. Then:
 
 ```bash
 python -m init_db
@@ -327,7 +327,7 @@ PSS-LLM-Evaluation/
 ## Troubleshooting
 
 - **"Something went wrong, no mental status detected by AI"**: check the backend terminal for the model loading error. Common causes are no internet access during the first model download or an invalid `HUGGINGFACE_TOKEN`. [`RUN.md`](RUN.md) walks through debugging this step by step.
-- **"Something went wrong calling the AI API"**: Azure OpenAI isn't configured. Check http://localhost:8000/health/config.
+- **"Something went wrong calling the AI API"**: the LLM isn't configured (`OPENAI_API_KEY` missing). Check http://localhost:8000/health/config.
 - **CORS errors in the browser**: make sure the frontend's origin is listed in `CORS_ORIGINS` in `config.py`.
 - **"Failed to fetch" on every page**: the frontend can't reach the backend. Check that the backend's port matches `VITE_API_BASE_URL`, which defaults to `http://localhost:8000`.
 - **"Invalid password" at login**: `COMMON_PASSWORD` isn't set, or the password doesn't match it.
