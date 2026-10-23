@@ -5,7 +5,7 @@ from typing import Literal, Optional
 UserRole = Literal[
     "Peer Support Specialist",
     "Peer Mentee",
-    "Research Team Members",
+    "Research Team Member",
     "Admin",
     "Others",
 ]
@@ -81,10 +81,11 @@ class UserFeedbackCreate(BaseModel):
     """Schema for creating user feedback. 1 = strongly disagree, 5 = strongly agree."""
     user_identifier: str
     role: UserRole
-    simple_to_use: int = Field(ge=1, le=5)
-    overall_satisfaction: int = Field(ge=1, le=5)
-    trust_ai_classification: int = Field(ge=1, le=5)
-    comfortable_using_ai_response: int = Field(ge=1, le=5)
+    simple_to_use: Optional[int] = Field(default=None, ge=1, le=5)
+    overall_satisfaction: Optional[int] = Field(default=None, ge=1, le=5)
+    trust_ai_classification: Optional[int] = Field(default=None, ge=1, le=5)
+    comfortable_using_ai_response_as_is: Optional[int] = Field(default=None, ge=1, le=5)
+    comfortable_using_ai_response_as_draft: Optional[int] = Field(default=None, ge=1, le=5)
     comment: Optional[str] = None
 
 
@@ -99,6 +100,8 @@ class UserFeedbackRead(BaseModel):
     overall_satisfaction: Optional[int] = None
     trust_ai_classification: Optional[int] = None
     comfortable_using_ai_response: Optional[int] = None
+    comfortable_using_ai_response_as_is: Optional[int] = None
+    comfortable_using_ai_response_as_draft: Optional[int] = None
     comment: Optional[str]
 
     class Config:

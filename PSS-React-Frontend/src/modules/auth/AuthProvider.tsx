@@ -3,7 +3,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 export const USER_ROLES = [
 	'Peer Support Specialist',
 	'Peer Mentee',
-	'Research Team Members',
+	'Research Team Member',
 	'Admin',
 	'Others',
 ] as const

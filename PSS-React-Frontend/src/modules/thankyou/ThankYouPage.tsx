@@ -57,15 +57,18 @@ export const ThankYouPage: React.FC = () => {
 	const [simpleToUse, setSimpleToUse] = useState<number | null>(null)
 	const [overallSatisfaction, setOverallSatisfaction] = useState<number | null>(null)
 	const [trustAiClassification, setTrustAiClassification] = useState<number | null>(null)
-	const [comfortableUsingAiResponse, setComfortableUsingAiResponse] = useState<number | null>(null)
+	const [comfortableAsIs, setComfortableAsIs] = useState<number | null>(null)
+	const [comfortableAsDraft, setComfortableAsDraft] = useState<number | null>(null)
 	const [feedback, setFeedback] = useState('')
 	const [isSubmitted, setIsSubmitted] = useState(false)
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const answersMissing =
-		simpleToUse === null ||
-		overallSatisfaction === null ||
-		trustAiClassification === null ||
-		comfortableUsingAiResponse === null
+		simpleToUse === null &&
+		overallSatisfaction === null &&
+		trustAiClassification === null &&
+		comfortableAsIs === null &&
+		comfortableAsDraft === null &&
+		feedback.trim() === ''
 
 	const handleLogout = () => {
 		setIsLoggingOut(true)
@@ -75,14 +78,7 @@ export const ThankYouPage: React.FC = () => {
 	}
 
 	const handleSubmitFeedback = async () => {
-		if (
-			!username ||
-			!role ||
-			simpleToUse === null ||
-			overallSatisfaction === null ||
-			trustAiClassification === null ||
-			comfortableUsingAiResponse === null
-		) return
+		if (!username || !role || answersMissing) return
 		setIsSubmitting(true)
 		try {
 			await api.createFeedback({
@@ -91,7 +87,8 @@ export const ThankYouPage: React.FC = () => {
 				simple_to_use: simpleToUse,
 				overall_satisfaction: overallSatisfaction,
 				trust_ai_classification: trustAiClassification,
-				comfortable_using_ai_response: comfortableUsingAiResponse,
+				comfortable_using_ai_response_as_is: comfortableAsIs,
+				comfortable_using_ai_response_as_draft: comfortableAsDraft,
 				comment: feedback.trim() || undefined,
 			})
 			setIsSubmitted(true)
@@ -135,9 +132,14 @@ export const ThankYouPage: React.FC = () => {
 							onChange={setTrustAiClassification}
 						/>
 						<LikertQuestion
-							prompt="I would feel comfortable using the AI-generated response (with some modification) in my peer support work."
-							value={comfortableUsingAiResponse}
-							onChange={setComfortableUsingAiResponse}
+							prompt="I would feel comfortable using the AI-generated response as-is in my peer support work."
+							value={comfortableAsIs}
+							onChange={setComfortableAsIs}
+						/>
+						<LikertQuestion
+							prompt="I would feel comfortable using the AI-generated response as a starting draft that I edit before using it in my peer support work."
+							value={comfortableAsDraft}
+							onChange={setComfortableAsDraft}
 						/>
 
 						<textarea

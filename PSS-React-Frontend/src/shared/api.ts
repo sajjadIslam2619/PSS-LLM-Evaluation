@@ -56,10 +56,11 @@ export type CreateOwnPostResponseCreate = {
 export type FeedbackCreate = {
 	user_identifier: string
 	role: string
-	simple_to_use: number
-	overall_satisfaction: number
-	trust_ai_classification: number
-	comfortable_using_ai_response: number
+	simple_to_use: number | null
+	overall_satisfaction: number | null
+	trust_ai_classification: number | null
+	comfortable_using_ai_response_as_is: number | null
+	comfortable_using_ai_response_as_draft: number | null
 	comment?: string
 }
 

@@ -69,6 +69,8 @@ def ensure_feedback_likert_columns():
             "overall_satisfaction",
             "trust_ai_classification",
             "comfortable_using_ai_response",
+            "comfortable_using_ai_response_as_is",
+            "comfortable_using_ai_response_as_draft",
         ):
             if col in existing:
                 continue

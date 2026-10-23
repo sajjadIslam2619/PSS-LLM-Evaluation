@@ -85,7 +85,7 @@ If `COMMON_PASSWORD` isn't set, every login fails with "Invalid password".
 
 - Peer Support Specialist
 - Peer Mentee
-- Research Team Members
+- Research Team Member
 - Admin
 - Others
 
@@ -111,9 +111,10 @@ The role list is defined in two places that must match: `USER_ROLES` in `PSS-Rea
 | It was simple to use this system. | `simple_to_use` |
 | Overall, I am satisfied with this system. | `overall_satisfaction` |
 | I would trust the AI-generated classification of a Veteran's mental state. | `trust_ai_classification` |
-| I would feel comfortable using the AI-generated response with some modification in my peer support work. | `comfortable_using_ai_response` |
+| I would feel comfortable using the AI-generated response as-is in my peer support work. | `comfortable_using_ai_response_as_is` |
+| I would feel comfortable using the AI-generated response as a starting draft that I edit before using it in my peer support work. | `comfortable_using_ai_response_as_draft` |
 
-Answers are saved as numbers: 1 = Strongly disagree, 2 = Disagree, 3 = Neutral, 4 = Agree, 5 = Strongly agree. All four questions must be answered before **Submit Feedback** is enabled. The comment is optional.
+Answers are saved as numbers: 1 = Strongly disagree, 2 = Disagree, 3 = Neutral, 4 = Agree, 5 = Strongly agree. All questions and the comment are optional; unanswered questions are saved as empty (`NULL`). **Submit Feedback** is enabled once at least one question is answered or a comment is written.
 
 The database stores only the numbers, not the question text. The link between each column and its wording is the table above and the `prompt` values in `PSS-React-Frontend/src/modules/thankyou/ThankYouPage.tsx`. If you reword a question during the study, record the date of the change.
 
@@ -158,7 +159,7 @@ VITE_API_BASE_URL=https://your-backend.example.com
 | `POST` | `/posts/generate-response` | Returns a response for `{ post_content, post_id? }`, plus `source` (`ai`, `default` or `none`) and the Azure OpenAI connection status. |
 | `POST` | `/responses` | Saves a participant's evaluation of a Reddit post. |
 | `POST` | `/create-own-post` | Saves a participant's evaluation of their own post. |
-| `POST` | `/feedback` | Saves thank-you page answers `{ user_identifier, role, simple_to_use, overall_satisfaction, trust_ai_classification, comfortable_using_ai_response, comment? }`. |
+| `POST` | `/feedback` | Saves thank-you page answers `{ user_identifier, role, simple_to_use?, overall_satisfaction?, trust_ai_classification?, comfortable_using_ai_response_as_is?, comfortable_using_ai_response_as_draft?, comment? }`. |
 | `GET` | `/export` | Downloads all data as a zip of CSV files. Requires the export key. |
 | `GET` | `/health` | Health check. |
 | `GET` | `/health/config` | Shows whether the Azure OpenAI settings are present, without revealing their values. |
@@ -264,8 +265,10 @@ The database has three tables with no foreign keys between them. Each row is one
 | `simple_to_use` | INTEGER | 1–5 |
 | `overall_satisfaction` | INTEGER | 1–5 |
 | `trust_ai_classification` | INTEGER | 1–5 |
-| `comfortable_using_ai_response` | INTEGER | 1–5 |
-| `rate` | INTEGER | Required. A copy of `overall_satisfaction`, kept for older data. |
+| `comfortable_using_ai_response` | INTEGER | 1–5. No longer asked; kept for older data ("…with some modification…"). |
+| `comfortable_using_ai_response_as_is` | INTEGER | 1–5 |
+| `comfortable_using_ai_response_as_draft` | INTEGER | 1–5 |
+| `rate` | INTEGER | Required. A copy of `overall_satisfaction`, kept for older data; `0` when that question was skipped. |
 | `comment` | TEXT | Optional comment |
 
 See [Thank-you page questions](#thank-you-page-questions) for the wording of each question.
