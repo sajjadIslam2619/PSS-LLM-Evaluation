@@ -143,10 +143,10 @@ Allowed frontend origins (CORS) are set in `CORS_ORIGINS` in `config.py`, not in
 
 ### Frontend
 
-The frontend reads `VITE_API_BASE_URL` and defaults to `http://localhost:8000`. To point it at a different backend, create `PSS-React-Frontend/.env.local`:
+The frontend reads `VITE_BACKEND_URL` and defaults to `http://localhost:8000`. To point it at a different backend, create `PSS-React-Frontend/.env.local`:
 
 ```
-VITE_API_BASE_URL=https://your-backend.example.com
+VITE_BACKEND_URL=https://your-backend.example.com
 ```
 
 ## API overview
@@ -329,7 +329,7 @@ PSS-LLM-Evaluation/
 - **"Something went wrong, no mental status detected by AI"**: check the backend terminal for the model loading error. Common causes are no internet access during the first model download or an invalid `HUGGINGFACE_TOKEN`. [`RUN.md`](RUN.md) walks through debugging this step by step.
 - **"Something went wrong calling the AI API"**: the LLM isn't configured (`OPENAI_API_KEY` missing). Check http://localhost:8000/health/config.
 - **CORS errors in the browser**: make sure the frontend's origin is listed in `CORS_ORIGINS` in `config.py`.
-- **"Failed to fetch" on every page**: the frontend can't reach the backend. Check that the backend's port matches `VITE_API_BASE_URL`, which defaults to `http://localhost:8000`.
+- **"Failed to fetch" on every page**: the frontend can't reach the backend. Check that the backend's port matches `VITE_BACKEND_URL`, which defaults to `http://localhost:8000`.
 - **"Invalid password" at login**: `COMMON_PASSWORD` isn't set, or the password doesn't match it.
 
 ## License

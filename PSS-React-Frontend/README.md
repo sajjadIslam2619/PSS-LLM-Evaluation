@@ -9,5 +9,5 @@ Dev commands:
 
 Environment:
 
-- Create `.env.local` with `VITE_API_BASE_URL=http://localhost:8000`
+- Create `.env.local` with `VITE_BACKEND_URL=http://localhost:8000`
 - Login endpoint expected at `/auth/login` returning `{ token: string }`

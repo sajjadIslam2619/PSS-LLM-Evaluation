@@ -62,7 +62,7 @@ npm run dev
 **Optional:** To use a different API URL, create `.env` in `PSS-React-Frontend`:
 
 ```
-VITE_API_BASE_URL=http://localhost:8000
+VITE_BACKEND_URL=http://localhost:8000
 ```
 
 ### 3. Build for production

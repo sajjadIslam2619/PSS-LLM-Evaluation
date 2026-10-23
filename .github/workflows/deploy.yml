@@ -33,13 +33,13 @@ jobs:
       - run: npm ci
       - name: Check API URL is set
         run: |
-          if [ -z "${{ vars.VITE_API_BASE_URL }}" ]; then
-            echo "::error::Set the VITE_API_BASE_URL repository variable (Settings > Secrets and variables > Actions > Variables)."
+          if [ -z "${{ vars.VITE_BACKEND_URL }}" ]; then
+            echo "::error::Set the VITE_BACKEND_URL repository variable (Settings > Secrets and variables > Actions > Variables)."
             exit 1
           fi
       - run: npm run build
         env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
       # SPA fallback + skip Jekyll processing (harmless safeguard)
       - run: cp dist/index.html dist/404.html && touch dist/.nojekyll
       - uses: actions/upload-pages-artifact@v3
