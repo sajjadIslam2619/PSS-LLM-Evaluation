@@ -55,7 +55,6 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 - API: http://localhost:8000
 - Interactive docs: http://localhost:8000/docs
 - Health check: http://localhost:8000/health
-- Azure config check: http://localhost:8000/health/config
 
 ### 2. Frontend
 
