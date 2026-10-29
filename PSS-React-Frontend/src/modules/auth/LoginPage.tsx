@@ -1,13 +1,24 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { USER_ROLES, useAuth, type UserRole } from './AuthProvider'
 import { api } from '../../shared/api'
 
 export const LoginPage: React.FC = () => {
 	const navigate = useNavigate()
 	const { login } = useAuth()
-	const [emailOrName, setEmailOrName] = useState('')
-	const [password, setPassword] = useState('')
+	// Invite links can prefill the form: ?user=<name>&pass=<password>
+	const [searchParams, setSearchParams] = useSearchParams()
+	const [emailOrName, setEmailOrName] = useState(() => searchParams.get('user') ?? '')
+	const [password, setPassword] = useState(() => searchParams.get('pass') ?? '')
+
+	useEffect(() => {
+		if (searchParams.has('user') || searchParams.has('pass')) {
+			const rest = new URLSearchParams(searchParams)
+			rest.delete('user')
+			rest.delete('pass')
+			setSearchParams(rest, { replace: true })
+		}
+	}, [searchParams, setSearchParams])
 	const [role, setRole] = useState<UserRole | ''>('')
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)

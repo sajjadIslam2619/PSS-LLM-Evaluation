@@ -80,6 +80,8 @@ There are no individual user accounts. Everyone uses the same password, and part
 
 If `COMMON_PASSWORD` isn't set, every login fails with "Invalid password".
 
+**Invite links:** add `user` and `pass` to the URL to prefill the name and password, e.g. `https://sajjadislam2619.github.io/PSS-LLM-Evaluation/?user=Jane%20Doe&pass=<COMMON_PASSWORD>`. Encode spaces as `%20`. The participant still picks a role and clicks **Sign in**. The page removes both values from the address bar once it has read them, but the link itself still contains the password, so send it only to participants.
+
 **Roles:**
 
 - Peer Support Specialist
