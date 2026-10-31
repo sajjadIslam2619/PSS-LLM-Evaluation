@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 import { api } from '../../shared/api'
+import { DemoVideo } from '../../shared/DemoVideo'
+import { EVALUATION_OPTIONS } from '../../shared/evaluationOptions'
 import labels from '../home/labels.json'
 
 export const CreatePostPage: React.FC = () => {
@@ -14,9 +16,9 @@ export const CreatePostPage: React.FC = () => {
     const [labelsLoading, setLabelsLoading] = useState(false)
     const [labelsError, setLabelsError] = useState<string | null>(null)
 
-    const [empathy, setEmpathy] = useState<string>('')
-    const [relevant, setRelevant] = useState<string>('')
-    const [safe, setSafe] = useState<string>('')
+    const [empathy, setEmpathy] = useState<number | null>(null)
+    const [relevant, setRelevant] = useState<number | null>(null)
+    const [safe, setSafe] = useState<number | null>(null)
     const [customLabels, setCustomLabels] = useState<string[]>([])
     const [userCustomResponse, setUserCustomResponse] = useState('')
     const [isSaving, setIsSaving] = useState(false)
@@ -104,9 +106,9 @@ export const CreatePostPage: React.FC = () => {
                 role,
                 post_content: post.trim(),
                 ai_generated_response: response.trim() || undefined,
-                empathy: empathy || undefined,
-                relevant: relevant || undefined,
-                safe: safe || undefined,
+                empathy: empathy ?? undefined,
+                relevant: relevant ?? undefined,
+                safe: safe ?? undefined,
                 modified_response: userCustomResponse.trim() || undefined,
                 ai_mental_status: selectedLabels.map((l) => l.name).join(', ') || undefined,
                 mental_status: customLabels.length ? customLabels.join(', ') : undefined,
@@ -136,31 +138,30 @@ export const CreatePostPage: React.FC = () => {
         setResponse('')
         setUserCustomResponse('')
         setSelectedLabels([])
-        setEmpathy('')
-        setRelevant('')
-        setSafe('')
+        setEmpathy(null)
+        setRelevant(null)
+        setSafe(null)
         setCustomLabels([])
     }
 
-    const EvaluationScale: React.FC<{ label: string; value: string; onChange: (value: string) => void }> = ({ label, value, onChange }) => {
-        const options = ['Agree', 'Somewhat Agree', 'Neutral', 'Somewhat Disagree', 'Disagree', 'Not Applicable']
+    const EvaluationScale: React.FC<{ label: string; value: number | null; onChange: (value: number) => void }> = ({ label, value, onChange }) => {
         const isMobile = window.innerWidth < 480
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 4 : 8 }}>
                 <span style={{ fontSize: isMobile ? '16px' : '18px', color: 'var(--muted)' }}>{label}:</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 4 : 6 }}>
-                    {options.map((option) => (
+                    {EVALUATION_OPTIONS.map((option) => (
                         <button
-                            key={option}
+                            key={option.value}
                             type="button"
-                            onClick={() => onChange(option)}
+                            onClick={() => onChange(option.value)}
                             style={{
                                 padding: isMobile ? '6px 8px' : '8px 12px',
                                 borderRadius: '6px',
                                 border: '2px solid',
-                                borderColor: value === option ? 'var(--primary)' : '#2a355f',
-                                background: value === option ? 'var(--primary)' : 'transparent',
-                                color: value === option ? 'white' : 'var(--text)',
+                                borderColor: value === option.value ? 'var(--primary)' : '#2a355f',
+                                background: value === option.value ? 'var(--primary)' : 'transparent',
+                                color: value === option.value ? 'white' : 'var(--text)',
                                 cursor: 'pointer',
                                 fontSize: isMobile ? '15px' : '16px',
                                 fontWeight: '500',
@@ -170,7 +171,7 @@ export const CreatePostPage: React.FC = () => {
                                 minHeight: isMobile ? '36px' : 'auto',
                             }}
                         >
-                            {option}
+                            {option.label}
                         </button>
                     ))}
                 </div>
@@ -319,6 +320,7 @@ export const CreatePostPage: React.FC = () => {
                                 </div>
                             </div>
                         )}
+                        {window.innerWidth < 768 && <DemoVideo />}
 
                         <div>
                             <span style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: '500' }}>
@@ -399,6 +401,7 @@ export const CreatePostPage: React.FC = () => {
                                     </div>
                                 )}
                             </div>
+                            <DemoVideo />
                         </div>
                     )}
                 </div>

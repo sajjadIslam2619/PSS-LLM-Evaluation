@@ -23,4 +23,5 @@ class UserFeedback(Base):
     comfortable_using_ai_response: Mapped[int] = mapped_column(Integer, nullable=True)  # no longer asked; kept for older data
     comfortable_using_ai_response_as_is: Mapped[int] = mapped_column(Integer, nullable=True)  # 1 strongly disagree, 5 strongly agree
     comfortable_using_ai_response_as_draft: Mapped[int] = mapped_column(Integer, nullable=True)  # 1 strongly disagree, 5 strongly agree
+    ai_makes_work_manageable: Mapped[int] = mapped_column(Integer, nullable=True)  # 1 strongly disagree, 5 strongly agree
     comment: Mapped[str] = mapped_column(Text, nullable=True)

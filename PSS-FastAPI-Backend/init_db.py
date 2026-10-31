@@ -71,12 +71,68 @@ def ensure_feedback_likert_columns():
             "comfortable_using_ai_response",
             "comfortable_using_ai_response_as_is",
             "comfortable_using_ai_response_as_draft",
+            "ai_makes_work_manageable",
         ):
             if col in existing:
                 continue
             conn.execute(text(f"ALTER TABLE user_feedback ADD COLUMN {col} INTEGER"))
             conn.commit()
             print(f"  Added column user_feedback.{col}")
+
+
+EVALUATION_COLUMNS = ("empathy", "relevant", "safe")
+LEGACY_EVALUATION_SCORES = {
+    "Agree": 5,
+    "Somewhat Agree": 4,
+    "Neutral": 3,
+    "Somewhat Disagree": 2,
+    "Disagree": 1,
+    "Not Applicable": 0,
+}
+
+
+def ensure_numeric_evaluation_columns():
+    """Rebuild response tables whose empathy/relevant/safe columns still store text labels.
+
+    SQLite cannot change a column type in place, so the table is recreated from the model
+    and old labels are converted to 0-5.
+    """
+    inspector = inspect(sync_engine)
+    tables = inspector.get_table_names()
+    for table in ("user_response", "create_own_post_response"):
+        if table not in tables:
+            continue
+        columns = inspector.get_columns(table)
+        types = {col["name"]: str(col["type"]).upper() for col in columns}
+        if all(types.get(col, "INTEGER") == "INTEGER" for col in EVALUATION_COLUMNS):
+            continue
+
+        old_table = f"{table}_old"
+        model_table = Base.metadata.tables[table]
+        unknown = [col["name"] for col in columns if col["name"] not in model_table.c]
+        if unknown:
+            raise RuntimeError(f"{table} has columns not in the model {unknown}; refusing to rebuild it")
+        common = [col["name"] for col in columns]
+        cases = " ".join(f"WHEN '{label}' THEN {score}" for label, score in LEGACY_EVALUATION_SCORES.items())
+        select_cols = ", ".join(
+            f"CASE TRIM({col}) {cases} "
+            f"WHEN '0' THEN 0 WHEN '1' THEN 1 WHEN '2' THEN 2 WHEN '3' THEN 3 WHEN '4' THEN 4 WHEN '5' THEN 5 "
+            f"ELSE NULL END"
+            if col in EVALUATION_COLUMNS
+            else col
+            for col in common
+        )
+        index_names = [index["name"] for index in inspector.get_indexes(table)]
+        with sync_engine.begin() as conn:
+            conn.execute(text(f"ALTER TABLE {table} RENAME TO {old_table}"))
+            for name in index_names:
+                conn.execute(text(f"DROP INDEX IF EXISTS {name}"))
+            model_table.create(bind=conn)
+            conn.execute(text(
+                f"INSERT INTO {table} ({', '.join(common)}) SELECT {select_cols} FROM {old_table}"
+            ))
+            conn.execute(text(f"DROP TABLE {old_table}"))
+        print(f"  Converted {table}.empathy/relevant/safe to numeric scores")
 
 
 def create_tables_sync():
@@ -94,6 +150,8 @@ def create_tables_sync():
     ensure_feedback_likert_columns()
     print("Migration: adding role if missing...")
     ensure_role_column()
+    print("Migration: converting response evaluations to numeric scores if needed...")
+    ensure_numeric_evaluation_columns()
 
 
 def main():

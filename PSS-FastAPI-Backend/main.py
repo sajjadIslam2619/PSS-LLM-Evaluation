@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import get_settings
-from init_db import ensure_feedback_likert_columns, ensure_role_column
+from init_db import ensure_feedback_likert_columns, ensure_numeric_evaluation_columns, ensure_role_column
 from routers import auth, responses, create_own_post, feedback, posts, export
 
 settings = get_settings()
@@ -20,6 +20,7 @@ settings = get_settings()
 async def lifespan(_app: FastAPI):
     ensure_feedback_likert_columns()
     ensure_role_column()
+    ensure_numeric_evaluation_columns()
     yield
 
 

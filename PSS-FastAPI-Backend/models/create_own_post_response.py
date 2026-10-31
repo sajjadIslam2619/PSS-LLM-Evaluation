@@ -19,9 +19,9 @@ class CreateOwnPostResponse(Base):
     article_id: Mapped[int] = mapped_column(Integer, nullable=True)  # max(existing) + 1
     post_content: Mapped[str] = mapped_column(Text, nullable=True)  # user's post content
     ai_generated_response: Mapped[str] = mapped_column(String(2000), nullable=True)
-    empathy: Mapped[str] = mapped_column(String(50), nullable=True)
-    relevant: Mapped[str] = mapped_column(String(50), nullable=True)
-    safe: Mapped[str] = mapped_column(String(50), nullable=True)
+    empathy: Mapped[int] = mapped_column(Integer, nullable=True)  # 1 = strongly disagree … 5 = strongly agree, 0 = not applicable
+    relevant: Mapped[int] = mapped_column(Integer, nullable=True)
+    safe: Mapped[int] = mapped_column(Integer, nullable=True)
     modified_response: Mapped[str] = mapped_column(String(2000), nullable=True)  # user's custom response
     ai_mental_status: Mapped[str] = mapped_column(String(500), nullable=True)  # AI-detected labels (comma-separated)
     mental_status: Mapped[str] = mapped_column(String(500), nullable=True)  # user-selected labels (comma-separated)

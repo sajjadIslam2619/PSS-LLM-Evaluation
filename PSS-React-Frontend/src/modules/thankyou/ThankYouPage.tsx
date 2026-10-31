@@ -59,6 +59,7 @@ export const ThankYouPage: React.FC = () => {
 	const [trustAiClassification, setTrustAiClassification] = useState<number | null>(null)
 	const [comfortableAsIs, setComfortableAsIs] = useState<number | null>(null)
 	const [comfortableAsDraft, setComfortableAsDraft] = useState<number | null>(null)
+	const [aiMakesWorkManageable, setAiMakesWorkManageable] = useState<number | null>(null)
 	const [feedback, setFeedback] = useState('')
 	const [isSubmitted, setIsSubmitted] = useState(false)
 	const [isSubmitting, setIsSubmitting] = useState(false)
@@ -68,6 +69,7 @@ export const ThankYouPage: React.FC = () => {
 		trustAiClassification === null &&
 		comfortableAsIs === null &&
 		comfortableAsDraft === null &&
+		aiMakesWorkManageable === null &&
 		feedback.trim() === ''
 
 	const handleLogout = () => {
@@ -89,6 +91,7 @@ export const ThankYouPage: React.FC = () => {
 				trust_ai_classification: trustAiClassification,
 				comfortable_using_ai_response_as_is: comfortableAsIs,
 				comfortable_using_ai_response_as_draft: comfortableAsDraft,
+				ai_makes_work_manageable: aiMakesWorkManageable,
 				comment: feedback.trim() || undefined,
 			})
 			setIsSubmitted(true)
@@ -137,9 +140,14 @@ export const ThankYouPage: React.FC = () => {
 							onChange={setComfortableAsIs}
 						/>
 						<LikertQuestion
-							prompt="I would feel comfortable using the AI-generated response as a starting draft that I edit before using it in my peer support work."
+							prompt="I would feel comfortable using the AI-generated response as a starting draft in my peer support work."
 							value={comfortableAsDraft}
 							onChange={setComfortableAsDraft}
+						/>
+						<LikertQuestion
+							prompt="I think using AI technology could make my peer support work more manageable."
+							value={aiMakesWorkManageable}
+							onChange={setAiMakesWorkManageable}
 						/>
 
 						<textarea

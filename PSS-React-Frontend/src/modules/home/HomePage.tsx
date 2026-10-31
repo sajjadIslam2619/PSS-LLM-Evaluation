@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 import { api, type ModelStatus, type RedditPost } from '../../shared/api'
+import { DemoVideo } from '../../shared/DemoVideo'
+import { EVALUATION_OPTIONS } from '../../shared/evaluationOptions'
 import labels from './labels.json'
 
 export const HomePage: React.FC = () => {
@@ -14,9 +16,9 @@ export const HomePage: React.FC = () => {
 	const [post, setPost] = useState('')
 	const [response, setResponse] = useState('')
 	const [selectedLabels, setSelectedLabels] = useState<{ name: string, percentage: number }[]>([])
-	const [empathy, setEmpathy] = useState<string>('')
-	const [relevant, setRelevant] = useState<string>('')
-	const [safe, setSafe] = useState<string>('')
+	const [empathy, setEmpathy] = useState<number | null>(null)
+	const [relevant, setRelevant] = useState<number | null>(null)
+	const [safe, setSafe] = useState<number | null>(null)
 	// const [isSatisfiedWithLabels, setIsSatisfiedWithLabels] = useState<boolean | null>(null)
 	const [customLabels, setCustomLabels] = useState<string[]>([])
 	//const [isSubmitted, setIsSubmitted] = useState(false)
@@ -36,9 +38,9 @@ export const HomePage: React.FC = () => {
 		userCustomResponse: string
 		selectedLabels: { name: string; percentage: number }[]
 		customLabels: string[]
-		empathy: string
-		relevant: string
-		safe: string
+		empathy: number | null
+		relevant: number | null
+		safe: number | null
 	}
 	const [responsesByPostIndex, setResponsesByPostIndex] = useState<Record<number, PostFormData>>({})
 
@@ -152,9 +154,9 @@ export const HomePage: React.FC = () => {
 			role,
 			article_id: postId,
 			ai_generated_response: data.response || undefined,
-			empathy: data.empathy || undefined,
-			relevant: data.relevant || undefined,
-			safe: data.safe || undefined,
+			empathy: data.empathy ?? undefined,
+			relevant: data.relevant ?? undefined,
+			safe: data.safe ?? undefined,
 			modified_response: data.userCustomResponse || undefined,
 			mental_status: mentalStatus,
 		})
@@ -187,9 +189,9 @@ export const HomePage: React.FC = () => {
 			setUserCustomResponse('')
 			setSelectedLabels(posts[prevIndex]?.labels ?? [])
 			setCustomLabels([])
-			setEmpathy('')
-			setRelevant('')
-			setSafe('')
+			setEmpathy(null)
+			setRelevant(null)
+			setSafe(null)
 		}
 	}
 
@@ -229,9 +231,9 @@ export const HomePage: React.FC = () => {
 				setUserCustomResponse('')
 				setSelectedLabels(posts[nextIndex]?.labels ?? [])
 				setCustomLabels([])
-				setEmpathy('')
-				setRelevant('')
-				setSafe('')
+				setEmpathy(null)
+				setRelevant(null)
+				setSafe(null)
 			}
 		}
 	}
@@ -261,26 +263,25 @@ export const HomePage: React.FC = () => {
 
 
 
-	const EvaluationScale: React.FC<{ label: string; value: string; onChange: (value: string) => void }> = ({ label, value, onChange }) => {
-		const options = ['Agree', 'Somewhat Agree', 'Neutral', 'Somewhat Disagree', 'Disagree', 'Not Applicable']
+	const EvaluationScale: React.FC<{ label: string; value: number | null; onChange: (value: number) => void }> = ({ label, value, onChange }) => {
 		const isMobile = window.innerWidth < 480
 
 		return (
 			<div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 4 : 8 }}>
 				<span style={{ fontSize: isMobile ? '16px' : '18px', color: 'var(--muted)' }}>{label}:</span>
 				<div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 4 : 6 }}>
-					{options.map((option) => (
+					{EVALUATION_OPTIONS.map((option) => (
 						<button
-							key={option}
+							key={option.value}
 							type="button"
-							onClick={() => onChange(option)}
+							onClick={() => onChange(option.value)}
 							style={{
 								padding: isMobile ? '6px 8px' : '8px 12px',
 								borderRadius: '6px',
 								border: '2px solid',
-								borderColor: value === option ? 'var(--primary)' : '#2a355f',
-								background: value === option ? 'var(--primary)' : 'transparent',
-								color: value === option ? 'white' : 'var(--text)',
+								borderColor: value === option.value ? 'var(--primary)' : '#2a355f',
+								background: value === option.value ? 'var(--primary)' : 'transparent',
+								color: value === option.value ? 'white' : 'var(--text)',
 								cursor: 'pointer',
 								fontSize: isMobile ? '15px' : '16px',
 								fontWeight: '500',
@@ -290,7 +291,7 @@ export const HomePage: React.FC = () => {
 								minHeight: isMobile ? '36px' : 'auto'
 							}}
 						>
-							{option}
+							{option.label}
 						</button>
 					))}
 				</div>
@@ -434,6 +435,7 @@ export const HomePage: React.FC = () => {
 								</div>
 							</div>
 						)}
+						{window.innerWidth < 768 && <DemoVideo />}
 
 						{/* Generate Comment button */}
 						<div>
@@ -578,6 +580,7 @@ export const HomePage: React.FC = () => {
 									</div>
 								</>
 							)}
+							<DemoVideo />
 						</div>
 					)}
 				</div>

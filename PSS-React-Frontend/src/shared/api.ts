@@ -32,9 +32,9 @@ export type UserResponseCreate = {
 	role: string
 	article_id: number
 	ai_generated_response?: string
-	empathy?: string
-	relevant?: string
-	safe?: string
+	empathy?: number
+	relevant?: number
+	safe?: number
 	modified_response?: string
 	mental_status?: string
 }
@@ -45,9 +45,9 @@ export type CreateOwnPostResponseCreate = {
 	article_id?: number
 	post_content?: string
 	ai_generated_response?: string
-	empathy?: string
-	relevant?: string
-	safe?: string
+	empathy?: number
+	relevant?: number
+	safe?: number
 	modified_response?: string
 	ai_mental_status?: string
 	mental_status?: string
@@ -61,6 +61,7 @@ export type FeedbackCreate = {
 	trust_ai_classification: number | null
 	comfortable_using_ai_response_as_is: number | null
 	comfortable_using_ai_response_as_draft: number | null
+	ai_makes_work_manageable: number | null
 	comment?: string
 }
 

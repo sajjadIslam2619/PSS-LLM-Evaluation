@@ -18,8 +18,8 @@ class UserResponse(Base):
     response_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     article_id: Mapped[int] = mapped_column(Integer, nullable=False)  # Reddit post id (1-5) or create-own-post id
     ai_generated_response: Mapped[str] = mapped_column(String(2000), nullable=True)
-    empathy: Mapped[str] = mapped_column(String(50), nullable=True)  # Agree, Somewhat Agree, etc.
-    relevant: Mapped[str] = mapped_column(String(50), nullable=True)
-    safe: Mapped[str] = mapped_column(String(50), nullable=True)
+    empathy: Mapped[int] = mapped_column(Integer, nullable=True)  # 1 = strongly disagree … 5 = strongly agree, 0 = not applicable
+    relevant: Mapped[int] = mapped_column(Integer, nullable=True)
+    safe: Mapped[int] = mapped_column(Integer, nullable=True)
     modified_response: Mapped[str] = mapped_column(String(2000), nullable=True)  # user's custom response
     mental_status: Mapped[str] = mapped_column(String(500), nullable=True)  # comma-separated labels

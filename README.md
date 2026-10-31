@@ -6,7 +6,7 @@ A web app for evaluating LLM-generated responses in a **Peer Support System (PSS
 
 - **Reddit post evaluation**: participants work through a fixed set of Reddit posts (`PSS-FastAPI-Backend/data/redditPosts.json`). For each one they see an AI-generated response, rate it, edit it if they want, and pick the mental status labels they think apply.
 - **Create your own post**: participants write a post. A local [multiMentalRoBERTA-6-class](https://huggingface.co/SajjadIslam/multiMentalRoBERTA-6-class) model shows the top two detected mental states, and an LLM generates a response for them to rate.
-- **Feedback (thank-you page)**: participants answer five optional 1–5 agreement questions about the system and the AI, plus an optional comment.
+- **Feedback (thank-you page)**: participants answer six optional 1–5 agreement questions about the system and the AI, plus an optional comment.
 - **Fallback responses**: if the LLM isn't configured or fails, the backend returns the curated `default-response` from `redditPosts.json` for that post, and the page shows a notice saying the AI model isn't connected.
 - **Roles**: participants pick a role at login, and it's saved with every submission.
 - **Data export**: researchers can download all saved data as CSV files from a key-protected URL.
@@ -98,12 +98,12 @@ The role list is defined in two places that must match: `USER_ROLES` in `PSS-Rea
 2. **Review Reddit posts** (`/home`): for each post, the participant:
    - reads the post and its mental state labels, and selects their own labels if they disagree. The selectable labels are Stress, Depression, PTSD, Suicidal, Anxiety, Substance Use Risk, Social Isolation and None, defined in `PSS-React-Frontend/src/modules/home/labels.json`.
    - clicks **Generate Response with AI** and reads the response
-   - rates the response as empathic, relevant and safe, on a scale from Agree to Disagree, with Not Applicable as an option
+   - rates the response as empathic, relevant and safe, on a scale from Strongly disagree to Strongly agree, with Not applicable as an option
    - optionally writes their own improved response
 
    Each post is saved when the participant clicks **Next Post**. After the last post they choose **Save and Exit** or **Create your own post**.
 3. **Create your own post** (`/create-post`, optional): the participant writes a post. Once it has at least 30 words, the classifier shows the top two detected mental states. The participant then generates, rates and optionally rewrites a response, as on the Reddit posts.
-4. **Thank-you page** (`/thank-you`): the participant answers four questions on a five-point scale and can add a comment.
+4. **Thank-you page** (`/thank-you`): the participant answers six optional questions on a five-point scale and can add a comment.
 
 ### Thank-you page questions
 
@@ -113,7 +113,8 @@ The role list is defined in two places that must match: `USER_ROLES` in `PSS-Rea
 | Overall, I am satisfied with this system. | `overall_satisfaction` |
 | I would trust the AI-generated classification of a Veteran's mental state. | `trust_ai_classification` |
 | I would feel comfortable using the AI-generated response as-is in my peer support work. | `comfortable_using_ai_response_as_is` |
-| I would feel comfortable using the AI-generated response as a starting draft that I edit before using it in my peer support work. | `comfortable_using_ai_response_as_draft` |
+| I would feel comfortable using the AI-generated response as a starting draft in my peer support work. | `comfortable_using_ai_response_as_draft` |
+| I think using AI technology could make my peer support work more manageable. | `ai_makes_work_manageable` |
 
 Answers are saved as numbers: 1 = Strongly disagree, 2 = Disagree, 3 = Neutral, 4 = Agree, 5 = Strongly agree. All questions and the comment are optional; unanswered questions are saved as empty (`NULL`). **Submit Feedback** is enabled once at least one question is answered or a comment is written.
 
@@ -160,7 +161,7 @@ VITE_BACKEND_URL=https://your-backend.example.com
 | `POST` | `/posts/generate-response` | Returns a response for `{ post_content, post_id? }`, plus `source` (`ai`, `default` or `none`) and the LLM connection status. |
 | `POST` | `/responses` | Saves a participant's evaluation of a Reddit post. |
 | `POST` | `/create-own-post` | Saves a participant's evaluation of their own post. |
-| `POST` | `/feedback` | Saves thank-you page answers `{ user_identifier, role, simple_to_use?, overall_satisfaction?, trust_ai_classification?, comfortable_using_ai_response_as_is?, comfortable_using_ai_response_as_draft?, comment? }`. |
+| `POST` | `/feedback` | Saves thank-you page answers `{ user_identifier, role, simple_to_use?, overall_satisfaction?, trust_ai_classification?, comfortable_using_ai_response_as_is?, comfortable_using_ai_response_as_draft?, ai_makes_work_manageable?, comment? }`. |
 | `GET` | `/export` | Downloads all data as a zip of CSV files. Requires the export key. |
 | `GET` | `/health` | Health check. |
 | `GET` | `/health/config` | Shows whether the LLM settings are present and which model is configured, without revealing the key. |
@@ -241,9 +242,9 @@ The database has three tables with no foreign keys between them. Each row is one
 | --- | --- | --- |
 | `article_id` | INTEGER | Required. The post's `id` in `redditPosts.json`. |
 | `ai_generated_response` | VARCHAR(2000) | The response shown, whether AI-generated or the default. |
-| `empathy` | VARCHAR(50) | `Agree`, `Somewhat Agree`, `Neutral`, `Somewhat Disagree`, `Disagree` or `Not Applicable` |
-| `relevant` | VARCHAR(50) | Same scale as `empathy` |
-| `safe` | VARCHAR(50) | Same scale as `empathy` |
+| `empathy` | INTEGER | 1 = Strongly disagree, 2 = Disagree, 3 = Neutral, 4 = Agree, 5 = Strongly agree, 0 = Not applicable |
+| `relevant` | INTEGER | Same scale as `empathy` |
+| `safe` | INTEGER | Same scale as `empathy` |
 | `modified_response` | VARCHAR(2000) | The participant's own rewritten response |
 | `mental_status` | VARCHAR(500) | Comma-separated: the labels shown with the post plus the labels the participant selected |
 
@@ -254,7 +255,7 @@ The database has three tables with no foreign keys between them. Each row is one
 | `article_id` | INTEGER | Set to the highest existing `article_id` plus one |
 | `post_content` | TEXT | The post the participant wrote |
 | `ai_generated_response` | VARCHAR(2000) | The AI response shown |
-| `empathy`, `relevant`, `safe` | VARCHAR(50) | Same scale as in `user_response` |
+| `empathy`, `relevant`, `safe` | INTEGER | Same scale as in `user_response` |
 | `modified_response` | VARCHAR(2000) | The participant's own rewritten response |
 | `ai_mental_status` | VARCHAR(500) | Comma-separated labels detected by the classifier |
 | `mental_status` | VARCHAR(500) | Comma-separated labels the participant selected |
@@ -269,6 +270,7 @@ The database has three tables with no foreign keys between them. Each row is one
 | `comfortable_using_ai_response` | INTEGER | 1–5. No longer asked; kept for older data ("…with some modification…"). |
 | `comfortable_using_ai_response_as_is` | INTEGER | 1–5 |
 | `comfortable_using_ai_response_as_draft` | INTEGER | 1–5 |
+| `ai_makes_work_manageable` | INTEGER | 1–5 |
 | `rate` | INTEGER | Required. A copy of `overall_satisfaction`, kept for older data; `0` when that question was skipped. |
 | `comment` | TEXT | Optional comment |
 
