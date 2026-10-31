@@ -6,27 +6,30 @@ import { api } from '../../shared/api'
 export const LoginPage: React.FC = () => {
 	const navigate = useNavigate()
 	const { login } = useAuth()
-	// Invite links can prefill the form: ?user=<name>&pass=<password>
+	// Invite links can prefill the form: ?user=<name>&pass=<password>&role=<role>
 	const [searchParams, setSearchParams] = useSearchParams()
-	const [emailOrName, setEmailOrName] = useState(() => searchParams.get('user') ?? '')
+	const [name, setName] = useState(() => searchParams.get('user') ?? '')
 	const [password, setPassword] = useState(() => searchParams.get('pass') ?? '')
+	const [role, setRole] = useState<UserRole | ''>(() => {
+		const requested = searchParams.get('role')?.trim().toLowerCase()
+		return USER_ROLES.find((r) => r.toLowerCase() === requested) ?? ''
+	})
 
 	useEffect(() => {
-		if (searchParams.has('user') || searchParams.has('pass')) {
+		const inviteKeys = ['user', 'pass', 'role']
+		if (inviteKeys.some((key) => searchParams.has(key))) {
 			const rest = new URLSearchParams(searchParams)
-			rest.delete('user')
-			rest.delete('pass')
+			inviteKeys.forEach((key) => rest.delete(key))
 			setSearchParams(rest, { replace: true })
 		}
 	}, [searchParams, setSearchParams])
-	const [role, setRole] = useState<UserRole | ''>('')
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setError(null)
-		const identifier = emailOrName.trim()
+		const identifier = name.trim()
 		if (!identifier || !role) return
 		setLoading(true)
 		try {
@@ -48,12 +51,12 @@ export const LoginPage: React.FC = () => {
 			</div>
 			<form onSubmit={handleSubmit} className="card">
 				<label>
-					<span>Email or Name</span>
+					<span>Name</span>
 					<input
 						type="text"
-						value={emailOrName}
-						onChange={(e) => setEmailOrName(e.target.value)}
-						placeholder="Enter your email or name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						placeholder="Enter your name"
 						required
 						autoComplete="username"
 					/>

@@ -4,7 +4,7 @@ from typing import Literal, Optional
 
 UserRole = Literal[
     "Peer Support Specialist",
-    "Peer Mentee",
+    "Veteran",
     "Research Team Member",
     "Admin",
     "Others",

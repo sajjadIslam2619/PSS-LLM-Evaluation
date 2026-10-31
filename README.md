@@ -72,20 +72,20 @@ The login page asks for three things:
 
 | Field | What to enter |
 | --- | --- |
-| Email or Name | Any name or email. It's saved with each submission as `user_identifier`. |
+| Name | The participant's name. It's saved with each submission as `user_identifier`. |
 | Password | The shared password set in `COMMON_PASSWORD` (see [Configuration](#configuration)). |
 | Role | One of the roles below. It's saved with each submission as `role`. |
 
-There are no individual user accounts. Everyone uses the same password, and participants are identified only by the name or email they type, so "John" and "john@example.com" count as two different participants.
+There are no individual user accounts. Everyone uses the same password, and participants are identified only by the name they type, so "John" and "John Smith" count as two different participants.
 
 If `COMMON_PASSWORD` isn't set, every login fails with "Invalid password".
 
-**Invite links:** add `user` and `pass` to the URL to prefill the name and password, e.g. `https://sajjadislam2619.github.io/PSS-LLM-Evaluation/?user=Jane%20Doe&pass=<COMMON_PASSWORD>`. Encode spaces as `%20`. The participant still picks a role and clicks **Sign in**. The page removes both values from the address bar once it has read them, but the link itself still contains the password, so send it only to participants.
+**Invite links:** add `user`, `pass` and `role` to the URL to prefill the login form, e.g. `https://sajjadislam2619.github.io/PSS-LLM-Evaluation/?user=Jane%20Doe&pass=<COMMON_PASSWORD>&role=Veteran`. Each value is optional. Encode spaces as `%20` (e.g. `role=Peer%20Support%20Specialist`). `role` must be one of the roles below (case doesn't matter); anything else leaves the role unselected. The participant still clicks **Sign in** and can change any field first. The page removes these values from the address bar once it has read them, but the link itself still contains the password, so send it only to participants.
 
 **Roles:**
 
 - Peer Support Specialist
-- Peer Mentee
+- Veteran
 - Research Team Member
 - Admin
 - Others
@@ -94,7 +94,7 @@ The role list is defined in two places that must match: `USER_ROLES` in `PSS-Rea
 
 ## Participant flow
 
-1. **Login** (`/`): name or email, shared password and role.
+1. **Login** (`/`): name, shared password and role.
 2. **Review Reddit posts** (`/home`): for each post, the participant:
    - reads the post and its mental state labels, and selects their own labels if they disagree. The selectable labels are Stress, Depression, PTSD, Suicidal, Anxiety, Substance Use Risk, Social Isolation and None, defined in `PSS-React-Frontend/src/modules/home/labels.json`.
    - clicks **Generate Response with AI** and reads the response
@@ -231,7 +231,7 @@ The database has three tables with no foreign keys between them. Each row is one
 | Column | Type | Notes |
 | --- | --- | --- |
 | `id` | INTEGER | Primary key, auto-increment |
-| `user_identifier` | VARCHAR(255) | Required, indexed. The name or email typed at login. |
+| `user_identifier` | VARCHAR(255) | Required, indexed. The name typed at login. |
 | `role` | VARCHAR(100) | Role chosen at login. Empty for rows saved before roles were added. |
 | `response_date` | DATETIME | Required. Set by the server, in UTC. |
 

@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 
 export const USER_ROLES = [
 	'Peer Support Specialist',
-	'Peer Mentee',
+	'Veteran',
 	'Research Team Member',
 	'Admin',
 	'Others',
