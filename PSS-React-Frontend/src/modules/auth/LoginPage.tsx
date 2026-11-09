@@ -11,7 +11,7 @@ export const LoginPage: React.FC = () => {
 	// eligible for the thank-you email, and it only matches the email and role in the link.
 	const [searchParams, setSearchParams] = useSearchParams()
 	const [invite] = useState(() => searchParams.get('invite'))
-	const [email, setEmail] = useState(() => searchParams.get('email') ?? '')
+	const [email, setEmail] = useState(() => searchParams.get('email') ?? searchParams.get('user') ?? '')
 	const [password, setPassword] = useState(() => searchParams.get('pass') ?? '')
 	const [role, setRole] = useState<UserRole | ''>(() => {
 		const requested = searchParams.get('role')?.trim().toLowerCase()
@@ -22,7 +22,7 @@ export const LoginPage: React.FC = () => {
 	const [roleLocked] = useState(() => !!invite && !!role)
 
 	useEffect(() => {
-		const inviteKeys = ['email', 'pass', 'role', 'invite']
+		const inviteKeys = ['email', 'user', 'pass', 'role', 'invite']
 		if (inviteKeys.some((key) => searchParams.has(key))) {
 			const rest = new URLSearchParams(searchParams)
 			inviteKeys.forEach((key) => rest.delete(key))
