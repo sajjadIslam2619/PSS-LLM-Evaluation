@@ -1,4 +1,5 @@
 """Thank-you email with the gift card link, sent when a participant clicks "Save and Exit"."""
+import hmac
 import logging
 import re
 
@@ -10,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import get_settings
 from database import SyncSessionLocal, get_db
-from invites import is_valid_invite
 from mailer import completion_email_body, send_email
 from models.completion_email import CompletionEmail
 from models.create_own_post_response import CreateOwnPostResponse
@@ -27,7 +27,14 @@ SUBJECT = "Thank you for participating in the PSS LLM Evaluation study"
 class CompletionEmailRequest(BaseModel):
     email: str
     role: str
-    invite: str | None = None
+    # Password from the invitation link; the frontend only sends it when the participant
+    # logged in through a link with email, role and password.
+    link_password: str | None = None
+
+
+def _is_link_password_valid(link_password: str | None) -> bool:
+    password = get_settings().COMMON_PASSWORD
+    return bool(link_password) and bool(password) and hmac.compare_digest(password.encode(), link_password.encode())
 
 
 def _deliver(record_id: int, email: str) -> None:
@@ -51,8 +58,8 @@ async def send_completion_email(
 ):
     """Email the gift card link once per participant.
 
-    Requires a valid invite code for this email and role (see invites.py), an eligible role,
-    and at least one saved answer under that email and role.
+    Requires a login through the invitation link (its password must match COMMON_PASSWORD),
+    an eligible role, and at least one saved answer under that email and role.
     """
     email = data.email.strip().lower()
     role = data.role
@@ -60,8 +67,8 @@ async def send_completion_email(
         raise HTTPException(status_code=422, detail="Invalid email address")
     if role not in ELIGIBLE_ROLES:
         return {"status": "skipped", "reason": "role is not eligible"}
-    if not is_valid_invite(email, role, data.invite):
-        return {"status": "skipped", "reason": "not logged in from a valid invite link"}
+    if not _is_link_password_valid(data.link_password):
+        return {"status": "skipped", "reason": "not logged in from the invitation link"}
     settings = get_settings()
     if not settings.email_ready:
         return {"status": "skipped", "reason": "email is not configured"}

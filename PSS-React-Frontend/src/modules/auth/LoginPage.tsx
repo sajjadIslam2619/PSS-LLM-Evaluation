@@ -6,26 +6,30 @@ import { api } from '../../shared/api'
 export const LoginPage: React.FC = () => {
 	const navigate = useNavigate()
 	const { login } = useAuth()
-	// Invite links prefill the form: ?email=<email>&role=<role>&pass=<password>&invite=<code>
-	// The invite code (made by scripts/make_invite_links.py) is what makes a participant
-	// eligible for the thank-you email, and it only matches the email and role in the link.
+	// Invitation links prefill the form: ?user=<email>&role=<role>&pass=<password> (email= works too).
+	// Only a login from such a link is eligible for the thank-you email; the link's password is
+	// what the backend checks.
 	const [searchParams, setSearchParams] = useSearchParams()
-	const [invite] = useState(() => searchParams.get('invite'))
-	const [email, setEmail] = useState(() => searchParams.get('email') ?? searchParams.get('user') ?? '')
+	const [linkPassword] = useState(() => {
+		const linkEmail = searchParams.get('email') ?? searchParams.get('user')
+		if (!linkEmail?.trim() || !searchParams.get('role')?.trim()) return null
+		return searchParams.get('pass') || null
+	})
+	const [email, setEmail] = useState(() => (searchParams.get('email') ?? searchParams.get('user') ?? '').trim())
 	const [password, setPassword] = useState(() => searchParams.get('pass') ?? '')
 	const [role, setRole] = useState<UserRole | ''>(() => {
 		const requested = searchParams.get('role')?.trim().toLowerCase()
 		return USER_ROLES.find((r) => r.toLowerCase() === requested) ?? ''
 	})
-	// Fields filled by an invite link can't be edited; changing them would invalidate the code.
-	const [emailLocked] = useState(() => !!invite && !!email)
-	const [roleLocked] = useState(() => !!invite && !!role)
+	// Fields filled by an invitation link can't be edited.
+	const [emailLocked] = useState(() => !!linkPassword && !!email)
+	const [roleLocked] = useState(() => !!linkPassword && !!role)
 
 	useEffect(() => {
-		const inviteKeys = ['email', 'user', 'pass', 'role', 'invite']
-		if (inviteKeys.some((key) => searchParams.has(key))) {
+		const linkKeys = ['email', 'user', 'pass', 'role']
+		if (linkKeys.some((key) => searchParams.has(key))) {
 			const rest = new URLSearchParams(searchParams)
-			inviteKeys.forEach((key) => rest.delete(key))
+			linkKeys.forEach((key) => rest.delete(key))
 			setSearchParams(rest, { replace: true })
 		}
 	}, [searchParams, setSearchParams])
@@ -40,7 +44,7 @@ export const LoginPage: React.FC = () => {
 		setLoading(true)
 		try {
 			await api.login({ username: identifier, password })
-			login(identifier, role, invite)
+			login(identifier, role, linkPassword)
 			navigate('/home')
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Invalid password')

@@ -91,7 +91,7 @@ const LikertQuestion: React.FC<{
 )
 
 export const ThankYouPage: React.FC = () => {
-	const { username, role, invite, logout } = useAuth()
+	const { username, role, linkPassword, logout } = useAuth()
 	const [isLoggingOut, setIsLoggingOut] = useState(false)
 	const [simpleToUse, setSimpleToUse] = useState<number | null>(null)
 	const [overallSatisfaction, setOverallSatisfaction] = useState<number | null>(null)
@@ -147,7 +147,7 @@ export const ThankYouPage: React.FC = () => {
 			<div style={{ textAlign: 'center', marginBottom: 24, padding: '0 20px', maxWidth: '920px', margin: '0 auto' }}>
 				<h1 style={{ fontSize: '32px', margin: '0 0 32px 0', color: 'var(--primary)' }}>Thank You!</h1>
 
-				{username && isEligibleForCompletionEmail(role, invite) && <GiftCardNotice email={username} />}
+				{username && isEligibleForCompletionEmail(role, linkPassword) && <GiftCardNotice email={username} />}
 
 				{!isSubmitted ? (
 					<div style={{

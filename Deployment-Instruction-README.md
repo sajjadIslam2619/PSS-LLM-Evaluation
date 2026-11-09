@@ -2,10 +2,10 @@
 
 How the PSS LLM Evaluation app is deployed:
 
-| Part | Where it runs | URL |
-| --- | --- | --- |
-| Frontend (React + Vite) | GitHub Pages | https://sajjadislam2619.github.io/PSS-LLM-Evaluation/ |
-| Backend (FastAPI) + database (SQLite) | AWS EC2 (Ubuntu 24.04), behind Caddy for HTTPS | https://<BACKEND_HOST> |
+| Part                                  | Where it runs                                  | URL                                                   |
+| ------------------------------------- | ---------------------------------------------- | ----------------------------------------------------- |
+| Frontend (React + Vite)               | GitHub Pages                                   | https://sajjadislam2619.github.io/PSS-LLM-Evaluation/ |
+| Backend (FastAPI) + database (SQLite) | AWS EC2 (Ubuntu 24.04), behind Caddy for HTTPS | https://                                              |
 
 The frontend is a static site that calls the backend over HTTPS. Deploy the backend first, because the frontend build needs the backend's URL.
 
@@ -185,7 +185,7 @@ chmod 600 .env
 | `HUGGINGFACE_TOKEN` | No | The classifier model is public. |
 | `SMTP_USERNAME` | For email | Gmail address that sends the thank-you (gift card) email after **Save and Exit**. |
 | `SMTP_PASSWORD` | For email | A Google App Password: turn on 2-Step Verification for the Gmail account, then create one at https://myaccount.google.com/apppasswords. The normal Gmail password doesn't work. |
-| `GIFT_CARD_LINK` | For email | Link sent in the email. Only participants who log in through an invite link from `.venv/bin/python scripts/make_invite_links.py --email <email> --role Veteran` (or `--csv participants.csv`) receive it; run that script on this server, since the links are signed with this `SECRET_KEY`. If any of these three is missing, no email is sent. Check with `curl -s https://<BACKEND_HOST>/health/config` (`"email_ready": true`). |
+| `GIFT_CARD_LINK` | For email | Link sent in the email. Only Veterans and Peer Support Specialists who log in through the Qualtrics invitation link (`?user=<email>&role=<role>&pass=<COMMON_PASSWORD>`) receive it, so the `pass` in that link must match `COMMON_PASSWORD` here. If any of these three is missing, no email is sent. Check with `curl -s https://<BACKEND_HOST>/health/config` (`"email_ready": true`). |
 
 After editing `.env`, restart the backend: `sudo systemctl restart pss`.
 
@@ -221,7 +221,7 @@ python3 -m venv .venv
 
 Install the CPU build of PyTorch **before** `requirements.txt`. The default PyTorch on Linux includes GPU libraries (~2.5 GB) that are useless on EC2 CPU instances. The check should print a version ending in `+cpu`.
 
-**c. Create `.env`** as described in 2.4.
+**c. Create** `.env` as described in 2.4.
 
 **d. Create the database tables (once)**
 

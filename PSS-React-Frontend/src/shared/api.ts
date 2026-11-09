@@ -67,15 +67,15 @@ export type FeedbackCreate = {
 
 const COMPLETION_EMAIL_ROLES = ['Peer Support Specialist', 'Veteran']
 
-export function isEligibleForCompletionEmail(role: string | null, invite: string | null): boolean {
-	return !!invite && !!role && COMPLETION_EMAIL_ROLES.includes(role)
+export function isEligibleForCompletionEmail(role: string | null, linkPassword: string | null): boolean {
+	return !!linkPassword && !!role && COMPLETION_EMAIL_ROLES.includes(role)
 }
 
-/** Ask the backend to email the gift card link. Only invited participants qualify; the backend
- * checks the invite code and sends at most once per participant. */
-export function notifyCompletion(email: string, role: string, invite: string | null): void {
-	if (!invite || !isEligibleForCompletionEmail(role, invite)) return
-	api.sendCompletionEmail(email, role, invite).catch((e) => console.error('Failed to request completion email:', e))
+/** Ask the backend to email the gift card link. Only participants who logged in through the
+ * invitation link qualify; the backend checks the link's password and sends at most once per participant. */
+export function notifyCompletion(email: string, role: string, linkPassword: string | null): void {
+	if (!linkPassword || !isEligibleForCompletionEmail(role, linkPassword)) return
+	api.sendCompletionEmail(email, role, linkPassword).catch((e) => console.error('Failed to request completion email:', e))
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -138,10 +138,10 @@ export const api = {
 		})
 	},
 
-	async sendCompletionEmail(email: string, role: string, invite: string): Promise<{ status: string; reason?: string }> {
+	async sendCompletionEmail(email: string, role: string, linkPassword: string): Promise<{ status: string; reason?: string }> {
 		return await request('/notify/completion-email', {
 			method: 'POST',
-			body: JSON.stringify({ email, role, invite }),
+			body: JSON.stringify({ email, role, link_password: linkPassword }),
 		})
 	},
 
