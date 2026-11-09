@@ -260,6 +260,16 @@ export const HomePage: React.FC = () => {
 		setTimeout(() => navigate('/thank-you'), 1500)
 	}
 
+	const goToCreatePost = async () => {
+		try {
+			await saveOneResponse(currentPostIndex, getCurrentFormData())
+		} catch (err) {
+			alert(err instanceof Error ? err.message : 'Failed to save response')
+			return
+		}
+		navigate('/create-post')
+	}
+
 
 
 
@@ -656,7 +666,7 @@ export const HomePage: React.FC = () => {
 								{isFinalSubmitted ? 'Saved...' : 'Save and Exit'}
 							</button>
 							<button
-								onClick={() => navigate('/create-post')}
+								onClick={goToCreatePost}
 								style={{
 									padding: '8px 16px',
 									borderRadius: '6px',
