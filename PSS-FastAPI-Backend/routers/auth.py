@@ -9,7 +9,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/login", response_model=Token)
 async def login(body: LoginRequest):
     """
-    Login with name/email identifier and common password.
+    Login with email and common password.
     Returns a JWT token with the user identifier.
     """
     if not verify_password(body.password):

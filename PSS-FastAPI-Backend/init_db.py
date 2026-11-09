@@ -8,6 +8,7 @@ from database import Base, sync_engine
 from models.user_response import UserResponse
 from models.create_own_post_response import CreateOwnPostResponse
 from models.user_feedback import UserFeedback
+from models.completion_email import CompletionEmail
 
 
 def add_article_id_if_missing():
@@ -55,6 +56,11 @@ def ensure_role_column():
             conn.execute(text(f"ALTER TABLE {table} ADD COLUMN role VARCHAR(100)"))
             conn.commit()
             print(f"  Added column {table}.role")
+
+
+def ensure_completion_email_table():
+    """Create the completion_email table on databases made before it existed."""
+    CompletionEmail.__table__.create(bind=sync_engine, checkfirst=True)
 
 
 def ensure_feedback_likert_columns():
@@ -142,6 +148,7 @@ def create_tables_sync():
     print("  - user_response")
     print("  - create_own_post_response")
     print("  - user_feedback")
+    print("  - completion_email")
     print("Migration: adding article_id if missing...")
     add_article_id_if_missing()
     print("Migration: dropping post_id if exists...")

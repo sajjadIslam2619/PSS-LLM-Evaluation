@@ -15,11 +15,12 @@ os.environ.setdefault("DEBUG", "false")
 from sqlalchemy.engine import make_url  # noqa: E402
 
 from config import get_settings  # noqa: E402
+from models.completion_email import CompletionEmail  # noqa: E402
 from models.create_own_post_response import CreateOwnPostResponse  # noqa: E402
 from models.user_feedback import UserFeedback  # noqa: E402
 from models.user_response import UserResponse  # noqa: E402
 
-MODELS = (UserResponse, CreateOwnPostResponse, UserFeedback)
+MODELS = (UserResponse, CreateOwnPostResponse, UserFeedback, CompletionEmail)
 
 
 def database_url():

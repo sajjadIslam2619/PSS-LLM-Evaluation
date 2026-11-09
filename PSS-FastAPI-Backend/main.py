@@ -10,8 +10,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import get_settings
-from init_db import ensure_feedback_likert_columns, ensure_numeric_evaluation_columns, ensure_role_column
-from routers import auth, responses, create_own_post, feedback, posts, export
+from init_db import (
+    ensure_completion_email_table,
+    ensure_feedback_likert_columns,
+    ensure_numeric_evaluation_columns,
+    ensure_role_column,
+)
+from routers import auth, responses, create_own_post, feedback, posts, export, notify
 
 settings = get_settings()
 
@@ -21,6 +26,7 @@ async def lifespan(_app: FastAPI):
     ensure_feedback_likert_columns()
     ensure_role_column()
     ensure_numeric_evaluation_columns()
+    ensure_completion_email_table()
     yield
 
 
@@ -45,6 +51,7 @@ app.include_router(create_own_post.router)
 app.include_router(feedback.router)
 app.include_router(posts.router)
 app.include_router(export.router)
+app.include_router(notify.router)
 
 
 @app.get("/health")
@@ -61,4 +68,5 @@ def health_config():
         "OPENAI_API_KEY_set": bool(s.OPENAI_API_KEY.strip()),
         "OPENAI_MODEL": s.OPENAI_MODEL,
         "llm_ready": bool(s.OPENAI_API_KEY.strip()),
+        "email_ready": s.email_ready,
     }

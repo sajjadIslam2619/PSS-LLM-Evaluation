@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import get_settings
 from database import get_db
+from models.completion_email import CompletionEmail
 from models.create_own_post_response import CreateOwnPostResponse
 from models.user_feedback import UserFeedback
 from models.user_response import UserResponse
@@ -22,6 +23,7 @@ TABLES = (
     ("user_feedback.csv", UserFeedback),
     ("user_response.csv", UserResponse),
     ("create_own_post_response.csv", CreateOwnPostResponse),
+    ("completion_email.csv", CompletionEmail),
 )
 
 
@@ -55,7 +57,7 @@ async def export_data(
     x_export_key: str | None = Header(default=None),
     session: AsyncSession = Depends(get_db),
 ):
-    """Return a zip of user_feedback, user_response, and create_own_post_response."""
+    """Return a zip of user_feedback, user_response, create_own_post_response, and completion_email."""
     settings = get_settings()
     if not settings.EXPORT_KEY:
         raise HTTPException(status_code=503, detail="Export is disabled. Set EXPORT_KEY.")

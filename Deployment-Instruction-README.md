@@ -159,6 +159,9 @@ SECRET_KEY=<generated value>
 COMMON_PASSWORD=<participant password>
 EXPORT_KEY=<long random secret, different from the password>
 OPENAI_API_KEY=<your OpenAI API key>
+SMTP_USERNAME=<gmail address that sends the thank-you email>
+SMTP_PASSWORD=<Google App Password, 16 characters>
+GIFT_CARD_LINK=<gift card link to include in the email>
 DATABASE_URL=sqlite:////home/ubuntu/PSS-LLM-Evaluation/PSS-FastAPI-Backend/pss.db
 ```
 
@@ -180,6 +183,9 @@ chmod 600 .env
 | `OPENAI_MODEL` | No | Default `gpt-5.5-2026-04-23`. Use a dated snapshot so all participants see the same model. |
 | `OPENAI_TEMPERATURE` | No | Leave unset. Newer models only accept their default. |
 | `HUGGINGFACE_TOKEN` | No | The classifier model is public. |
+| `SMTP_USERNAME` | For email | Gmail address that sends the thank-you (gift card) email after **Save and Exit**. |
+| `SMTP_PASSWORD` | For email | A Google App Password: turn on 2-Step Verification for the Gmail account, then create one at https://myaccount.google.com/apppasswords. The normal Gmail password doesn't work. |
+| `GIFT_CARD_LINK` | For email | Link sent in the email. If any of these three is missing, no email is sent. Check with `curl -s https://<BACKEND_HOST>/health/config` (`"email_ready": true`). |
 
 After editing `.env`, restart the backend: `sudo systemctl restart pss`.
 

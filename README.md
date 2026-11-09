@@ -72,15 +72,15 @@ The login page asks for three things:
 
 | Field | What to enter |
 | --- | --- |
-| Name | The participant's name. It's saved with each submission as `user_identifier`. |
+| Email | The participant's email address, saved in lowercase with each submission as `user_identifier`. The thank-you email goes to this address. |
 | Password | The shared password set in `COMMON_PASSWORD` (see [Configuration](#configuration)). |
 | Role | One of the roles below. It's saved with each submission as `role`. |
 
-There are no individual user accounts. Everyone uses the same password, and participants are identified only by the name they type, so "John" and "John Smith" count as two different participants.
+There are no individual user accounts. Everyone uses the same password, and participants are identified only by the email they type, so a typo creates a separate participant.
 
 If `COMMON_PASSWORD` isn't set, every login fails with "Invalid password".
 
-**Invite links:** add `user`, `pass` and `role` to the URL to prefill the login form, e.g. `https://sajjadislam2619.github.io/PSS-LLM-Evaluation/?user=Jane%20Doe&pass=<COMMON_PASSWORD>&role=Veteran`. Each value is optional. Encode spaces as `%20` (e.g. `role=Peer%20Support%20Specialist`). `role` must be one of the roles below (case doesn't matter); anything else leaves the role unselected. The participant still clicks **Sign in** and can change any field first. The page removes these values from the address bar once it has read them, but the link itself still contains the password, so send it only to participants.
+**Invite links:** add `email`, `pass` and `role` to the URL to prefill the login form, e.g. `https://sajjadislam2619.github.io/PSS-LLM-Evaluation/?email=jane.doe%40example.com&pass=<COMMON_PASSWORD>&role=Veteran`. Encode `@` as `%40` (a plain `@` also works in most browsers). Each value is optional. Encode spaces as `%20` (e.g. `role=Peer%20Support%20Specialist`). `role` must be one of the roles below (case doesn't matter); anything else leaves the role unselected. The participant still clicks **Sign in** and can change any field first. The page removes these values from the address bar once it has read them, but the link itself still contains the password, so send it only to participants.
 
 **Roles:**
 
@@ -94,7 +94,7 @@ The role list is defined in two places that must match: `USER_ROLES` in `PSS-Rea
 
 ## Participant flow
 
-1. **Login** (`/`): name, shared password and role.
+1. **Login** (`/`): email, shared password and role.
 2. **Review Reddit posts** (`/home`): for each post, the participant:
    - reads the post and its mental state labels, and selects their own labels if they disagree. The selectable labels are Stress, Depression, PTSD, Suicidal, Anxiety, Substance Use Risk, Social Isolation and None, defined in `PSS-React-Frontend/src/modules/home/labels.json`.
    - clicks **Generate Response with AI** and reads the response
@@ -104,6 +104,15 @@ The role list is defined in two places that must match: `USER_ROLES` in `PSS-Rea
    Each post is saved when the participant clicks **Next Post**. After the last post they choose **Save and Exit** or **Create your own post**.
 3. **Create your own post** (`/create-post`, optional): the participant writes a post. Once it has at least 30 words, the classifier shows the top two detected mental states. The participant then generates, rates and optionally rewrites a response, as on the Reddit posts.
 4. **Thank-you page** (`/thank-you`): the participant answers six optional questions on a five-point scale and can add a comment.
+
+### Thank-you email (gift card)
+
+When a participant clicks **Save and Exit** (on either page), the backend emails them a thank-you message with the gift card link from `GIFT_CARD_LINK`. The text is in `completion_email_body` in `PSS-FastAPI-Backend/mailer.py`. The email is only sent when:
+
+- the address has saved answers recorded with the role Peer Support Specialist or Veteran (the role is taken from the saved answers, not from the request), and
+- that address hasn't been emailed before. Each email sent is recorded in the `completion_email` table (included in the export), so clicking **Save and Exit** again doesn't send a second gift card.
+
+If sending fails (e.g. wrong Gmail password), the record is removed and the next **Save and Exit** tries again; the error is in the backend log (`sudo journalctl -u pss`). If the email settings below aren't complete, nothing is sent.
 
 ### Thank-you page questions
 
@@ -138,6 +147,11 @@ Copy `.env.example` to `.env` and set the values you need. Real environment vari
 | `OPENAI_API_KEY` | none | API key for that provider. Without it, the fallback responses are used. |
 | `OPENAI_MODEL` | `gpt-5.5-2026-04-23` | Model name (or Azure deployment name) to call. Use a dated snapshot so responses stay consistent across the study. |
 | `OPENAI_TEMPERATURE` | none (model default) | Optional sampling temperature. Leave unset for newer models, which reject anything but the default. |
+| `SMTP_USERNAME` | none | Gmail address that sends the thank-you email. |
+| `SMTP_PASSWORD` | none | Google **App Password** for that account (not the normal Gmail password; needs 2-Step Verification). |
+| `GIFT_CARD_LINK` | none | Link included in the thank-you email. All three of these must be set or no email is sent. |
+| `EMAIL_FROM` | `SMTP_USERNAME` | Optional sender address shown to participants. |
+| `SMTP_HOST` / `SMTP_PORT` | `smtp.gmail.com` / `587` | Change only for a provider other than Gmail. |
 
 The classifier model downloads the first time someone uses "Create your own post", so that first request can take a while. Later requests are fast.
 

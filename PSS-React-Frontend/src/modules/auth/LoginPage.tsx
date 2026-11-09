@@ -6,9 +6,9 @@ import { api } from '../../shared/api'
 export const LoginPage: React.FC = () => {
 	const navigate = useNavigate()
 	const { login } = useAuth()
-	// Invite links can prefill the form: ?user=<name>&pass=<password>&role=<role>
+	// Invite links can prefill the form: ?email=<email>&pass=<password>&role=<role>
 	const [searchParams, setSearchParams] = useSearchParams()
-	const [name, setName] = useState(() => searchParams.get('user') ?? '')
+	const [email, setEmail] = useState(() => searchParams.get('email') ?? '')
 	const [password, setPassword] = useState(() => searchParams.get('pass') ?? '')
 	const [role, setRole] = useState<UserRole | ''>(() => {
 		const requested = searchParams.get('role')?.trim().toLowerCase()
@@ -16,7 +16,7 @@ export const LoginPage: React.FC = () => {
 	})
 
 	useEffect(() => {
-		const inviteKeys = ['user', 'pass', 'role']
+		const inviteKeys = ['email', 'pass', 'role']
 		if (inviteKeys.some((key) => searchParams.has(key))) {
 			const rest = new URLSearchParams(searchParams)
 			inviteKeys.forEach((key) => rest.delete(key))
@@ -29,7 +29,7 @@ export const LoginPage: React.FC = () => {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setError(null)
-		const identifier = name.trim()
+		const identifier = email.trim().toLowerCase()
 		if (!identifier || !role) return
 		setLoading(true)
 		try {
@@ -51,14 +51,14 @@ export const LoginPage: React.FC = () => {
 			</div>
 			<form onSubmit={handleSubmit} className="card">
 				<label>
-					<span>Name</span>
+					<span>Email</span>
 					<input
-						type="text"
-						value={name}
-						onChange={(e) => setName(e.target.value)}
-						placeholder="Enter your name"
+						type="email"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						placeholder="Enter your email"
 						required
-						autoComplete="username"
+						autoComplete="email"
 					/>
 				</label>
 				<label>

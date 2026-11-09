@@ -69,6 +69,19 @@ class Settings:
     # Empty = use the model's default. Many newer models only accept the default.
     OPENAI_TEMPERATURE: str = os.getenv("OPENAI_TEMPERATURE", "")
 
+    # Thank-you email with the gift card link, sent after "Save and Exit".
+    # Gmail: SMTP_USERNAME is the Gmail address, SMTP_PASSWORD a Google App Password.
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USERNAME: str = os.getenv("SMTP_USERNAME", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    EMAIL_FROM: str = os.getenv("EMAIL_FROM", "") or os.getenv("SMTP_USERNAME", "")
+    GIFT_CARD_LINK: str = os.getenv("GIFT_CARD_LINK", "")
+
+    @property
+    def email_ready(self) -> bool:
+        return all(v.strip() for v in (self.SMTP_USERNAME, self.SMTP_PASSWORD, self.EMAIL_FROM, self.GIFT_CARD_LINK))
+
 
 @lru_cache
 def get_settings() -> Settings:

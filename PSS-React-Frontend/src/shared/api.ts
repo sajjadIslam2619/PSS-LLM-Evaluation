@@ -65,6 +65,14 @@ export type FeedbackCreate = {
 	comment?: string
 }
 
+const COMPLETION_EMAIL_ROLES = ['Peer Support Specialist', 'Veteran']
+
+/** Ask the backend to email the gift card link; it sends at most once per participant. */
+export function notifyCompletion(email: string, role: string): void {
+	if (!COMPLETION_EMAIL_ROLES.includes(role)) return
+	api.sendCompletionEmail(email).catch((e) => console.error('Failed to request completion email:', e))
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
 	const res = await fetch(`${BASE_URL}${path}`, {
 		...init,
@@ -122,6 +130,13 @@ export const api = {
 		return await request('/create-own-post', {
 			method: 'POST',
 			body: JSON.stringify(body),
+		})
+	},
+
+	async sendCompletionEmail(email: string): Promise<{ status: string; reason?: string }> {
+		return await request('/notify/completion-email', {
+			method: 'POST',
+			body: JSON.stringify({ email }),
 		})
 	},
 
