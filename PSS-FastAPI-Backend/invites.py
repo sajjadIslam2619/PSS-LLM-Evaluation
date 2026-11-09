@@ -3,7 +3,7 @@ participants invited by the research team can receive the thank-you email."""
 import base64
 import hashlib
 import hmac
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 from config import get_settings
 
@@ -25,4 +25,5 @@ def invite_link(email: str, role: str, app_url: str = DEFAULT_APP_URL, include_p
     if include_password:
         params["pass"] = get_settings().COMMON_PASSWORD
     params["invite"] = invite_code(email, role)
-    return f"{app_url}?{urlencode(params)}"
+    # Keep "@" readable and encode spaces as %20; "+" and "%40" get mangled by some email clients.
+    return f"{app_url}?{urlencode(params, safe='@', quote_via=quote)}"
