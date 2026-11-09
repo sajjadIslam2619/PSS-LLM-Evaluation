@@ -67,10 +67,14 @@ export type FeedbackCreate = {
 
 const COMPLETION_EMAIL_ROLES = ['Peer Support Specialist', 'Veteran']
 
+export function isEligibleForCompletionEmail(role: string | null, invite: string | null): boolean {
+	return !!invite && !!role && COMPLETION_EMAIL_ROLES.includes(role)
+}
+
 /** Ask the backend to email the gift card link. Only invited participants qualify; the backend
  * checks the invite code and sends at most once per participant. */
 export function notifyCompletion(email: string, role: string, invite: string | null): void {
-	if (!invite || !COMPLETION_EMAIL_ROLES.includes(role)) return
+	if (!invite || !isEligibleForCompletionEmail(role, invite)) return
 	api.sendCompletionEmail(email, role, invite).catch((e) => console.error('Failed to request completion email:', e))
 }
 
