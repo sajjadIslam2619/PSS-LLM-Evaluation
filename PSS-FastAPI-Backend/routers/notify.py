@@ -17,7 +17,8 @@ from models.create_own_post_response import CreateOwnPostResponse
 from models.user_response import UserResponse
 
 router = APIRouter(prefix="/notify", tags=["notify"])
-logger = logging.getLogger(__name__)
+# Uvicorn's logger is the one configured to print INFO, so these lines reach journalctl.
+logger = logging.getLogger("uvicorn.error")
 
 ELIGIBLE_ROLES = ("Peer Support Specialist", "Veteran")
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -35,6 +36,11 @@ class CompletionEmailRequest(BaseModel):
 def _is_link_password_valid(link_password: str | None) -> bool:
     password = get_settings().COMMON_PASSWORD
     return bool(link_password) and bool(password) and hmac.compare_digest(password.encode(), link_password.encode())
+
+
+def _skip(email: str, reason: str) -> dict:
+    logger.info("Completion email to %s skipped: %s", email, reason)
+    return {"status": "skipped", "reason": reason}
 
 
 def _deliver(record_id: int, email: str) -> None:
@@ -66,12 +72,12 @@ async def send_completion_email(
     if not EMAIL_PATTERN.match(email):
         raise HTTPException(status_code=422, detail="Invalid email address")
     if role not in ELIGIBLE_ROLES:
-        return {"status": "skipped", "reason": "role is not eligible"}
+        return _skip(email, "role is not eligible")
     if not _is_link_password_valid(data.link_password):
-        return {"status": "skipped", "reason": "not logged in from the invitation link"}
+        return _skip(email, "not logged in from the invitation link")
     settings = get_settings()
     if not settings.email_ready:
-        return {"status": "skipped", "reason": "email is not configured"}
+        return _skip(email, "email is not configured")
 
     saved = union_all(
         select(UserResponse.id).where(
@@ -82,10 +88,10 @@ async def send_completion_email(
         ),
     ).subquery()
     if not await session.scalar(select(func.count()).select_from(saved)):
-        return {"status": "skipped", "reason": "no saved answers"}
+        return _skip(email, "no saved answers")
 
     if await session.scalar(select(CompletionEmail.id).where(CompletionEmail.email == email)):
-        return {"status": "skipped", "reason": "already sent"}
+        return _skip(email, "already sent")
 
     record = CompletionEmail(email=email, role=role)
     session.add(record)
@@ -93,7 +99,7 @@ async def send_completion_email(
         await session.commit()
     except IntegrityError:
         await session.rollback()
-        return {"status": "skipped", "reason": "already sent"}
+        return _skip(email, "already sent")
 
     background_tasks.add_task(_deliver, record.id, email)
     return {"status": "queued"}
