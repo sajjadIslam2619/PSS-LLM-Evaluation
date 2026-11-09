@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import get_settings
 from database import SyncSessionLocal, get_db
+from invites import is_valid_invite
 from mailer import completion_email_body, send_email
 from models.completion_email import CompletionEmail
 from models.create_own_post_response import CreateOwnPostResponse
@@ -25,6 +26,8 @@ SUBJECT = "Thank you for participating in the PSS LLM Evaluation study"
 
 class CompletionEmailRequest(BaseModel):
     email: str
+    role: str
+    invite: str | None = None
 
 
 def _deliver(record_id: int, email: str) -> None:
@@ -48,25 +51,31 @@ async def send_completion_email(
 ):
     """Email the gift card link once per participant.
 
-    Only addresses that saved at least one answer as a Peer Support Specialist or Veteran
-    qualify; the role comes from the saved answers, not from the request.
+    Requires a valid invite code for this email and role (see invites.py), an eligible role,
+    and at least one saved answer under that email and role.
     """
     email = data.email.strip().lower()
+    role = data.role
     if not EMAIL_PATTERN.match(email):
         raise HTTPException(status_code=422, detail="Invalid email address")
+    if role not in ELIGIBLE_ROLES:
+        return {"status": "skipped", "reason": "role is not eligible"}
+    if not is_valid_invite(email, role, data.invite):
+        return {"status": "skipped", "reason": "not logged in from a valid invite link"}
     settings = get_settings()
     if not settings.email_ready:
         return {"status": "skipped", "reason": "email is not configured"}
 
-    saved_roles = union_all(
-        select(UserResponse.role).where(func.lower(UserResponse.user_identifier) == email),
-        select(CreateOwnPostResponse.role).where(func.lower(CreateOwnPostResponse.user_identifier) == email),
+    saved = union_all(
+        select(UserResponse.id).where(
+            func.lower(UserResponse.user_identifier) == email, UserResponse.role == role
+        ),
+        select(CreateOwnPostResponse.id).where(
+            func.lower(CreateOwnPostResponse.user_identifier) == email, CreateOwnPostResponse.role == role
+        ),
     ).subquery()
-    role = await session.scalar(
-        select(saved_roles.c.role).where(saved_roles.c.role.in_(ELIGIBLE_ROLES)).limit(1)
-    )
-    if role is None:
-        return {"status": "skipped", "reason": "no saved answers from an eligible role"}
+    if not await session.scalar(select(func.count()).select_from(saved)):
+        return {"status": "skipped", "reason": "no saved answers"}
 
     if await session.scalar(select(CompletionEmail.id).where(CompletionEmail.email == email)):
         return {"status": "skipped", "reason": "already sent"}

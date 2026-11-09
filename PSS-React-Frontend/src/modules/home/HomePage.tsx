@@ -8,7 +8,7 @@ import labels from './labels.json'
 
 export const HomePage: React.FC = () => {
 	const navigate = useNavigate()
-	const { username, role, logout } = useAuth()
+	const { username, role, invite, logout } = useAuth()
 	const [posts, setPosts] = useState<RedditPost[]>([])
 	const [postsLoading, setPostsLoading] = useState(true)
 	const [postsError, setPostsError] = useState<string | null>(null)
@@ -255,7 +255,7 @@ export const HomePage: React.FC = () => {
 			alert(err instanceof Error ? err.message : 'Failed to save responses')
 			return
 		}
-		if (role) notifyCompletion(username, role)
+		if (role) notifyCompletion(username, role, invite)
 		setIsFinalSubmitted(true)
 		setTimeout(() => navigate('/thank-you'), 1500)
 	}

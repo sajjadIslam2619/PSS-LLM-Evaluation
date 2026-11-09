@@ -80,7 +80,16 @@ There are no individual user accounts. Everyone uses the same password, and part
 
 If `COMMON_PASSWORD` isn't set, every login fails with "Invalid password".
 
-**Invite links:** add `email`, `pass` and `role` to the URL to prefill the login form, e.g. `https://sajjadislam2619.github.io/PSS-LLM-Evaluation/?email=jane.doe%40example.com&pass=<COMMON_PASSWORD>&role=Veteran`. Encode `@` as `%40` (a plain `@` also works in most browsers). Each value is optional. Encode spaces as `%20` (e.g. `role=Peer%20Support%20Specialist`). `role` must be one of the roles below (case doesn't matter); anything else leaves the role unselected. The participant still clicks **Sign in** and can change any field first. The page removes these values from the address bar once it has read them, but the link itself still contains the password, so send it only to participants.
+**Invite links:** generate them with the script below; only participants who log in through one can receive the thank-you email. A link looks like `https://sajjadislam2619.github.io/PSS-LLM-Evaluation/?email=jane.doe%40example.com&role=Veteran&pass=<COMMON_PASSWORD>&invite=<code>`. The `invite` code is signed with `SECRET_KEY` and matches only that email and role, so editing either part of the link (or making up a link) still logs in but doesn't qualify for the email. When the link has an invite code, the email and role fields are locked on the login page. The page removes these values from the address bar once it has read them, but the link itself still contains the password, so send each link only to its participant.
+
+Run the script where `.env` has the production `SECRET_KEY` and `COMMON_PASSWORD` (i.e. on the server), from `PSS-FastAPI-Backend`:
+
+```bash
+.venv/bin/python scripts/make_invite_links.py --email jane.doe@example.com --role Veteran
+.venv/bin/python scripts/make_invite_links.py --csv participants.csv   # columns: email,role -> participants_links.csv
+```
+
+Add `--no-password` to leave the password out of the link. Changing `SECRET_KEY` invalidates every invite link already sent. Links without an `invite` code (e.g. `?email=...&role=...`) still prefill the form, but those participants won't get the email.
 
 **Roles:**
 
@@ -109,7 +118,9 @@ The role list is defined in two places that must match: `USER_ROLES` in `PSS-Rea
 
 When a participant clicks **Save and Exit** (on either page), the backend emails them a thank-you message with the gift card link from `GIFT_CARD_LINK`. The text is in `completion_email_body` in `PSS-FastAPI-Backend/mailer.py`. The email is only sent when:
 
-- the address has saved answers recorded with the role Peer Support Specialist or Veteran (the role is taken from the saved answers, not from the request), and
+- the participant logged in through an invite link whose code matches their email and role (see **Invite links** under [Log in](#3-log-in)),
+- that role is Peer Support Specialist or Veteran,
+- they saved at least one answer under that email and role, and
 - that address hasn't been emailed before. Each email sent is recorded in the `completion_email` table (included in the export), so clicking **Save and Exit** again doesn't send a second gift card.
 
 If sending fails (e.g. wrong Gmail password), the record is removed and the next **Save and Exit** tries again; the error is in the backend log (`sudo journalctl -u pss`). If the email settings below aren't complete, nothing is sent.

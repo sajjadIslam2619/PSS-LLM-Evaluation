@@ -8,7 +8,7 @@ import labels from '../home/labels.json'
 
 export const CreatePostPage: React.FC = () => {
     const navigate = useNavigate()
-    const { username, role, logout } = useAuth()
+    const { username, role, invite, logout } = useAuth()
 
     const [post, setPost] = useState('')
     const [response, setResponse] = useState('')
@@ -126,7 +126,7 @@ export const CreatePostPage: React.FC = () => {
         try {
             const ok = await saveCurrentToBackend()
             if (ok) {
-                if (username && role) notifyCompletion(username, role)
+                if (username && role) notifyCompletion(username, role, invite)
                 navigate('/thank-you')
             }
         } finally {
