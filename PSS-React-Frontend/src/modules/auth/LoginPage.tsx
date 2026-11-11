@@ -7,13 +7,10 @@ export const LoginPage: React.FC = () => {
 	const navigate = useNavigate()
 	const { login } = useAuth()
 	// Invitation links prefill the form: ?user=<email>&role=<role>&pass=<password> (email= works too).
-	// Only a login from such a link is eligible for the thank-you email; the link's password is
-	// what the backend checks.
 	const [searchParams, setSearchParams] = useSearchParams()
-	const [linkPassword] = useState(() => {
+	const [fromInvitationLink] = useState(() => {
 		const linkEmail = searchParams.get('email') ?? searchParams.get('user')
-		if (!linkEmail?.trim() || !searchParams.get('role')?.trim()) return null
-		return searchParams.get('pass') || null
+		return !!linkEmail?.trim() && !!searchParams.get('role')?.trim() && !!searchParams.get('pass')
 	})
 	const [email, setEmail] = useState(() => (searchParams.get('email') ?? searchParams.get('user') ?? '').trim())
 	const [password, setPassword] = useState(() => searchParams.get('pass') ?? '')
@@ -22,8 +19,8 @@ export const LoginPage: React.FC = () => {
 		return USER_ROLES.find((r) => r.toLowerCase() === requested) ?? ''
 	})
 	// Fields filled by an invitation link can't be edited.
-	const [emailLocked] = useState(() => !!linkPassword && !!email)
-	const [roleLocked] = useState(() => !!linkPassword && !!role)
+	const [emailLocked] = useState(() => fromInvitationLink && !!email)
+	const [roleLocked] = useState(() => fromInvitationLink && !!role)
 
 	useEffect(() => {
 		const linkKeys = ['email', 'user', 'pass', 'role']
@@ -44,7 +41,7 @@ export const LoginPage: React.FC = () => {
 		setLoading(true)
 		try {
 			await api.login({ username: identifier, password })
-			login(identifier, role, linkPassword)
+			login(identifier, role)
 			navigate('/home')
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Invalid password')

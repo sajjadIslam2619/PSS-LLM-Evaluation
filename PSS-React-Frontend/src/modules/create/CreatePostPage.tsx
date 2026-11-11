@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
-import { api, notifyCompletion } from '../../shared/api'
+import { api } from '../../shared/api'
 import { DemoVideo } from '../../shared/DemoVideo'
 import { EVALUATION_OPTIONS } from '../../shared/evaluationOptions'
 import labels from '../home/labels.json'
 
 export const CreatePostPage: React.FC = () => {
     const navigate = useNavigate()
-    const { username, role, linkPassword, logout } = useAuth()
+    const { username, role, logout } = useAuth()
 
     const [post, setPost] = useState('')
     const [response, setResponse] = useState('')
@@ -125,10 +125,7 @@ export const CreatePostPage: React.FC = () => {
         setIsSaving(true)
         try {
             const ok = await saveCurrentToBackend()
-            if (ok) {
-                if (username && role) notifyCompletion(username, role, linkPassword)
-                navigate('/thank-you')
-            }
+            if (ok) navigate('/thank-you')
         } finally {
             setIsSaving(false)
         }

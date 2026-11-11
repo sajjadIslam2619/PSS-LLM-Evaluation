@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
-import { api, notifyCompletion, type ModelStatus, type RedditPost } from '../../shared/api'
+import { api, type ModelStatus, type RedditPost } from '../../shared/api'
 import { DemoVideo } from '../../shared/DemoVideo'
 import { EVALUATION_OPTIONS } from '../../shared/evaluationOptions'
 import labels from './labels.json'
 
 export const HomePage: React.FC = () => {
 	const navigate = useNavigate()
-	const { username, role, linkPassword, logout } = useAuth()
+	const { username, role, logout } = useAuth()
 	const [posts, setPosts] = useState<RedditPost[]>([])
 	const [postsLoading, setPostsLoading] = useState(true)
 	const [postsError, setPostsError] = useState<string | null>(null)
@@ -255,7 +255,6 @@ export const HomePage: React.FC = () => {
 			alert(err instanceof Error ? err.message : 'Failed to save responses')
 			return
 		}
-		if (role) notifyCompletion(username, role, linkPassword)
 		setIsFinalSubmitted(true)
 		setTimeout(() => navigate('/thank-you'), 1500)
 	}

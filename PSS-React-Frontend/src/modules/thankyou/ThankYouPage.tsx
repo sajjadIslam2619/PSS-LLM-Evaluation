@@ -1,45 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '../auth/AuthProvider'
-import { api, isEligibleForCompletionEmail } from '../../shared/api'
-
-const GIFT_CARD_CONTACTS = [
-	{ name: 'Dr. Zeno Franco', email: 'zfranco@mcw.edu' },
-	{ name: 'Dr. Praveen Madiraju', email: 'praveen.madiraju@marquette.edu' },
-]
-
-const GiftCardNotice: React.FC<{ email: string }> = ({ email }) => (
-	<div
-		role="status"
-		style={{
-			background: 'rgba(76, 175, 80, 0.1)',
-			border: '1px solid rgba(76, 175, 80, 0.5)',
-			borderRadius: '12px',
-			padding: '16px 20px',
-			marginBottom: '24px',
-			textAlign: 'left',
-			color: 'var(--text)',
-			lineHeight: 1.6,
-		}}
-	>
-		<p style={{ margin: '0 0 8px 0', fontWeight: 600 }}>
-			🎁 Please check your email. You should receive a gift card link at{' '}
-			<span style={{ color: 'var(--primary)' }}>{email}</span>.
-		</p>
-		<p style={{ margin: '0 0 8px 0' }}>
-			Please also check your spam folder. If you don't receive the gift card email, please contact:
-		</p>
-		<ol style={{ margin: 0, paddingLeft: '20px' }}>
-			{GIFT_CARD_CONTACTS.map((contact) => (
-				<li key={contact.email}>
-					{contact.name}:{' '}
-					<a href={`mailto:${contact.email}`} style={{ color: 'var(--primary)' }}>
-						{contact.email}
-					</a>
-				</li>
-			))}
-		</ol>
-	</div>
-)
+import { api } from '../../shared/api'
 
 const LIKERT_OPTIONS = [
 	{ value: 1, label: 'Strongly disagree' },
@@ -91,7 +52,7 @@ const LikertQuestion: React.FC<{
 )
 
 export const ThankYouPage: React.FC = () => {
-	const { username, role, linkPassword, logout } = useAuth()
+	const { username, role, logout } = useAuth()
 	const [isLoggingOut, setIsLoggingOut] = useState(false)
 	const [simpleToUse, setSimpleToUse] = useState<number | null>(null)
 	const [overallSatisfaction, setOverallSatisfaction] = useState<number | null>(null)
@@ -146,9 +107,6 @@ export const ThankYouPage: React.FC = () => {
 		<div className="container" style={{ maxWidth: 920 }}>
 			<div style={{ textAlign: 'center', marginBottom: 24, padding: '0 20px', maxWidth: '920px', margin: '0 auto' }}>
 				<h1 style={{ fontSize: '32px', margin: '0 0 32px 0', color: 'var(--primary)' }}>Thank You!</h1>
-
-				{username && isEligibleForCompletionEmail(role, linkPassword) && <GiftCardNotice email={username} />}
-
 				{!isSubmitted ? (
 					<div style={{
 						background: 'var(--bg-card)',

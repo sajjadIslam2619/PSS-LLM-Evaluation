@@ -80,7 +80,7 @@ There are no individual user accounts. Everyone uses the same password, and part
 
 If `COMMON_PASSWORD` isn't set, every login fails with "Invalid password".
 
-**Invitation links:** the Qualtrics survey sends participants to the app with a link like `https://sajjadislam2619.github.io/PSS-LLM-Evaluation/?user=<email>&role=<role>&pass=<COMMON_PASSWORD>` (`email=` works in place of `user=`). The link prefills the login form and locks the email and role fields. Only participants who log in through a link with an email, a role and the correct password can receive the thank-you email; logging in by typing the password doesn't qualify. The role text must match one of the roles below (case doesn't matter). Any email in such a link qualifies, so keep the password out of public places. The page removes these values from the address bar once it has read them.
+**Invitation links:** the Qualtrics survey sends participants to the app with a link like `https://sajjadislam2619.github.io/PSS-LLM-Evaluation/?user=<email>&role=<role>&pass=<COMMON_PASSWORD>` (`email=` works in place of `user=`). The link prefills the login form and locks the email and role fields. The role text must match one of the roles below (case doesn't matter). The page removes these values from the address bar once it has read them.
 
 **Roles:**
 
@@ -105,7 +105,9 @@ The role list is defined in two places that must match: `USER_ROLES` in `PSS-Rea
 3. **Create your own post** (`/create-post`, optional): the participant writes a post. Once it has at least 30 words, the classifier shows the top two detected mental states. The participant then generates, rates and optionally rewrites a response, as on the Reddit posts.
 4. **Thank-you page** (`/thank-you`): the participant answers six optional questions on a five-point scale and can add a comment.
 
-### Thank-you email (gift card)
+### Thank-you email (gift card) — currently turned off
+
+The frontend no longer calls the email endpoint or shows the gift card message, so no emails are sent. The backend code (`routers/notify.py`, `mailer.py`, the `SMTP_*`/`GIFT_CARD_LINK` settings and the `completion_email` table) is kept so the feature can be turned back on. To re-enable it, the frontend needs to call `POST /notify/completion-email` with `{email, role, link_password}` after **Save and Exit**, where `link_password` is the `pass` value from the invitation link. The rest of this section describes how it works when enabled.
 
 When a participant clicks **Save and Exit** (on either page), the backend emails them a thank-you message with the gift card link from `GIFT_CARD_LINK`. The text is in `completion_email_body` in `PSS-FastAPI-Backend/mailer.py`. The email is only sent when:
 
