@@ -1,11 +1,12 @@
 """Download saved participant data as a zip of CSV files."""
 import csv
 import io
+import logging
 import secrets
 import zipfile
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +19,7 @@ from models.user_feedback import UserFeedback
 from models.user_response import UserResponse
 
 router = APIRouter(tags=["export"])
+logger = logging.getLogger("pss.export")
 
 TABLES = (
     ("user_feedback.csv", UserFeedback),
@@ -53,24 +55,31 @@ def _to_csv(model, rows) -> str:
 
 @router.get("/export")
 async def export_data(
+    request: Request,
     key: str | None = Query(default=None),
     x_export_key: str | None = Header(default=None),
     session: AsyncSession = Depends(get_db),
 ):
     """Return a zip of user_feedback, user_response, create_own_post_response, and completion_email."""
     settings = get_settings()
+    client = request.headers.get("x-forwarded-for") or (request.client.host if request.client else "unknown")
     if not settings.EXPORT_KEY:
+        logger.warning("Export refused: EXPORT_KEY is not set (client %s)", client)
         raise HTTPException(status_code=503, detail="Export is disabled. Set EXPORT_KEY.")
     provided = x_export_key or key or ""
     if not _keys_match(provided, settings.EXPORT_KEY):
+        logger.warning("Export refused: wrong or missing key (client %s)", client)
         raise HTTPException(status_code=403, detail="Invalid export key")
 
     archive = io.BytesIO()
+    counts = []
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
         for filename, model in TABLES:
             result = await session.execute(select(model).order_by(model.id))
-            csv_text = _to_csv(model, result.scalars().all())
-            bundle.writestr(filename, csv_text.encode("utf-8-sig"))
+            rows = result.scalars().all()
+            counts.append(f"{model.__tablename__}={len(rows)}")
+            bundle.writestr(filename, _to_csv(model, rows).encode("utf-8-sig"))
+    logger.info("Data exported (client %s): %s", client, ", ".join(counts))
 
     return Response(
         content=archive.getvalue(),

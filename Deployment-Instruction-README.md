@@ -313,6 +313,26 @@ Run the classifier call once after every restart so the first participant doesn'
 | Caddy logs | `sudo journalctl -u caddy -n 50 --no-pager` |
 | Memory use | `free -h` |
 
+**What the backend log shows.** App lines look like `<time> <LEVEL> pss.<area>: <message>` (times are UTC); Uvicorn adds one `INFO:` line per request. Participant text (posts, responses, comments) and secrets are never logged, and `key=`/`pass=` values in URLs are shown as `***`.
+
+| Area | Logged |
+| --- | --- |
+| `pss` | Startup summary (which settings are set, AI model), warnings for missing settings, failed (5xx) or slow (>15s) requests, rejected request data (422) with the field and reason |
+| `pss.auth` | Each login, and failed logins with the email used |
+| `pss.responses`, `pss.own_post` | Each saved or updated answer: email, role, post number, whether an AI response and own response exist, the three scores |
+| `pss.feedback` | Each feedback: email, role, how many questions were answered, whether there's a comment |
+| `pss.posts` | AI response time or error (bad key, no credit, timeout), fallback to the default response, classifier load time and labels |
+| `pss.export` | Each download with row counts, and refused attempts with the client IP |
+
+Useful filters:
+
+```bash
+sudo journalctl -u pss --since today --no-pager | grep -E "WARNING|ERROR"   # problems only
+sudo journalctl -u pss --since today --no-pager | grep "user@example.com"   # one participant's activity
+```
+
+Set `LOG_LEVEL=DEBUG` in `.env` and restart for full stack traces of AI errors.
+
 **Deploying code updates**
 
 After pushing backend changes to `main`:

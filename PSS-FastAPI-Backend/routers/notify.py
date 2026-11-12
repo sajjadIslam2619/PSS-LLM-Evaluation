@@ -17,8 +17,7 @@ from models.create_own_post_response import CreateOwnPostResponse
 from models.user_response import UserResponse
 
 router = APIRouter(prefix="/notify", tags=["notify"])
-# Uvicorn's logger is the one configured to print INFO, so these lines reach journalctl.
-logger = logging.getLogger("uvicorn.error")
+logger = logging.getLogger("pss.notify")
 
 ELIGIBLE_ROLES = ("Peer Support Specialist", "Veteran")
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")

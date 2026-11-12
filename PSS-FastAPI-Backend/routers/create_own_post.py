@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,6 +9,18 @@ from models.create_own_post_response import CreateOwnPostResponse
 from schemas.user import CreateOwnPostResponseCreate, CreateOwnPostResponseRead
 
 router = APIRouter(prefix="/create-own-post", tags=["create-own-post"])
+logger = logging.getLogger("pss.own_post")
+
+
+def _summary(payload: dict) -> str:
+    return (
+        f"user={payload['user_identifier']} role={payload['role']} post={payload.get('article_id')} "
+        f"words={len((payload.get('post_content') or '').split())} "
+        f"ai_labels={payload.get('ai_mental_status') or '-'} "
+        f"ai_response={'yes' if payload.get('ai_generated_response') else 'no'} "
+        f"scores(empathy/relevant/safe)={payload.get('empathy')}/{payload.get('relevant')}/{payload.get('safe')} "
+        f"own_response={'yes' if payload.get('modified_response') else 'no'}"
+    )
 
 
 @router.post("", response_model=CreateOwnPostResponseRead, status_code=201)
@@ -36,6 +50,7 @@ async def create_own_post_response(
                     setattr(existing, key, value)
             await session.commit()
             await session.refresh(existing)
+            logger.info("Updated own post (id=%s): %s", existing.id, _summary(payload))
             return existing
     
     # No article_id or not found: generate new article_id and insert
@@ -47,4 +62,5 @@ async def create_own_post_response(
     session.add(response)
     await session.commit()
     await session.refresh(response)
+    logger.info("Saved new own post (id=%s): %s", response.id, _summary(payload))
     return response

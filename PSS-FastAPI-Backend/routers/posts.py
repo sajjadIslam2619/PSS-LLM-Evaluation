@@ -2,13 +2,14 @@ import asyncio
 import json
 import logging
 import threading
+import time
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from config import get_settings
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("pss.posts")
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 HF_DETECT_LABELS_MODEL = "SajjadIslam/multiMentalRoBERTA-6-class"
@@ -33,8 +34,10 @@ async def get_reddit_posts():
             posts = json.load(f)
         return {"posts": posts}
     except FileNotFoundError:
+        logger.error("Reddit posts file not found: %s", POSTS_FILE)
         raise HTTPException(status_code=500, detail="Reddit posts file not found")
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        logger.error("Reddit posts file is not valid JSON (%s): %s", POSTS_FILE, e)
         raise HTTPException(status_code=500, detail="Invalid JSON in posts file")
 
 
@@ -51,6 +54,8 @@ async def detect_labels(body: DetectLabelsRequest):
         global _classifier_pipeline
         with _classifier_lock:
             if _classifier_pipeline is None:
+                logger.info("Loading classifier model %s (first request after start)", HF_DETECT_LABELS_MODEL)
+                load_start = time.perf_counter()
                 from transformers import pipeline
                 _classifier_pipeline = pipeline(
                     "text-classification",
@@ -59,8 +64,11 @@ async def detect_labels(body: DetectLabelsRequest):
                     truncation=True,
                     token=settings.HUGGINGFACE_TOKEN or None,
                 )
+                logger.info("Classifier model loaded in %.1fs", time.perf_counter() - load_start)
         return _classifier_pipeline(content)
 
+    start = time.perf_counter()
+    words = len(content.split())
     try:
         # Run in thread pool (model load + inference can be slow)
         result = await asyncio.to_thread(_run_local_classification)
@@ -90,9 +98,13 @@ async def detect_labels(body: DetectLabelsRequest):
         if not labels:
             logger.warning("detect-labels: No labels from model. Raw: %s", result)
             return {"labels": [], "error": DETECT_LABELS_ERROR_MSG}
+        logger.info(
+            "detect-labels: %s words -> %s in %.1fs",
+            words, ", ".join(f"{l['name']} {l['percentage']}%" for l in labels), time.perf_counter() - start,
+        )
         return {"labels": labels}
     except Exception as e:
-        logger.exception("detect-labels: Request failed: %s", e)
+        logger.exception("detect-labels: Request failed after %.1fs (%s words): %s", time.perf_counter() - start, words, e)
         return {"labels": [], "error": DETECT_LABELS_ERROR_MSG}
 
 
@@ -193,23 +205,39 @@ async def generate_response(body: GenerateResponseRequest):
             "models": _model_statuses(settings, llm_connected, llm_detail),
         }
 
+    post_ref = f"post={body.post_id}" if body.post_id is not None else f"own post ({len(content.split())} words)"
+
     def _fallback_or_error(error: str | None, llm_detail: str) -> dict:
         fallback = _default_response_for_post(content, body.post_id)
         if fallback:
+            logger.warning("generate-response: %s -> using the default response (%s)", post_ref, llm_detail)
             return _result(fallback, "default", None, False, llm_detail)
+        logger.error("generate-response: %s -> no response shown to participant (%s)", post_ref, llm_detail)
         return _result("", "none", error, False, llm_detail)
 
     if not settings.OPENAI_API_KEY.strip():
         logger.warning("generate-response: OPENAI_API_KEY not set")
         return _fallback_or_error(CONFIG_ERROR_MSG, "Not configured (API key missing)")
 
+    start = time.perf_counter()
     try:
         text = await asyncio.to_thread(_call_llm, content, settings)
     except Exception as e:
-        logger.exception("generate-response: LLM call failed: %s", e)
+        # The API error message says what went wrong (bad key, no credit, timeout); the stack
+        # trace adds nothing for these, so it's only shown with LOG_LEVEL=DEBUG.
+        logger.error(
+            "generate-response: %s, model %s failed after %.1fs: %s: %s",
+            post_ref, settings.OPENAI_MODEL, time.perf_counter() - start, type(e).__name__, e,
+        )
+        logger.debug("generate-response traceback", exc_info=True)
         err_msg = str(e).strip() or "The AI service failed. Please try again later."
         return _fallback_or_error(err_msg, "Request failed")
 
     if not (text or "").strip():
+        logger.warning("generate-response: %s, model %s returned an empty response", post_ref, settings.OPENAI_MODEL)
         return _fallback_or_error(None, "Returned an empty response")
+    logger.info(
+        "generate-response: %s, model %s answered in %.1fs (%s words)",
+        post_ref, settings.OPENAI_MODEL, time.perf_counter() - start, len(text.split()),
+    )
     return _result(text.strip(), "ai", None, True, "Connected")
